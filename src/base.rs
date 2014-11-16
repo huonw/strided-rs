@@ -226,6 +226,8 @@ macro_rules! iterator {
     }
 }
 
+/// An iterator over shared references to the elements of a strided
+/// slice.
 pub struct Items<'a, T: 'a> {
     start: *const T,
     end: *const T,
@@ -234,6 +236,8 @@ pub struct Items<'a, T: 'a> {
 }
 iterator!(Items -> &'a T)
 
+/// An iterator over mutable references to the elements of a strided
+/// slice.
 pub struct MutItems<'a, T: 'a> {
     start: *mut T,
     end: *mut T,
