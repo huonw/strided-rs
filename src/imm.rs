@@ -105,6 +105,51 @@ impl<'a, T> Strided<'a, T> {
     pub fn iter(&self) -> ::Items<'a, T> {
         self.base.iter()
     }
+
+    /// Returns a strided slice containing only the elements from
+    /// indices `from` (inclusive) to `to` (exclusive).
+    ///
+    /// # Panic
+    ///
+    /// Panics if `from > to` or if `to > self.len()`.
+    #[inline]
+    pub fn slice(&self, from: uint, to: uint) -> Strided<'a, T> {
+        Strided::new_raw(self.base.slice(from, to))
+    }
+    /// Returns a strided slice containing only the elements from
+    /// index `from` (inclusive).
+    ///
+    /// # Panic
+    ///
+    /// Panics if `from > self.len()`.
+    #[inline]
+    pub fn slice_from(&self, from: uint) -> Strided<'a, T> {
+        Strided::new_raw(self.base.slice_from(from))
+    }
+    /// Returns a strided slice containing only the elements to
+    /// index `to` (exclusive).
+    ///
+    /// # Panic
+    ///
+    /// Panics if `to > self.len()`.
+    #[inline]
+    pub fn slice_to(&self, to: uint) -> Strided<'a, T> {
+        Strided::new_raw(self.base.slice_to(to))
+    }
+    /// Returns two strided slices, the first with elements up to
+    /// `idx` (exclusive) and the second with elements from `idx`.
+    ///
+    /// This is semantically equivalent to `(self.slice_to(idx),
+    /// self.slice_from(idx))`.
+    ///
+    /// # Panic
+    ///
+    /// Panics if `idx > self.len()`.
+    #[inline]
+    pub fn split_at(&self, idx: uint) -> (Strided<'a, T>, Strided<'a, T>) {
+        let (l, r) = self.base.split_at(idx);
+        (Strided::new_raw(l), Strided::new_raw(r))
+    }
 }
 
 impl<'a, T> Index<uint, T> for Strided<'a, T> {

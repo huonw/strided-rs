@@ -9,6 +9,14 @@ use base::Strided as Base;
 /// This can be viewed as an immutable strided slice via the `Deref`
 /// implementation, and so many methods are available through that
 /// type.
+///
+/// Many functions in this API take `self` and consume it. The
+/// `reborrow` method is a key part of ensuring that ownership doesn't
+/// disappear completely: it converts a reference `&'b mut
+/// MutStrided<'a, T>` into a `MutStrided<'b, T>`, that is, gives a
+/// by-value slice with a shorter lifetime. This can then be passed
+/// directly into the functions that consume `self` without losing
+/// control of the original slice.
 #[repr(C)]
 pub struct Strided<'a,T: 'a> {
     base: Base<'a, T>,
@@ -118,8 +126,53 @@ impl<'a, T> Strided<'a, T> {
     /// See also `iter_mut` which avoids consuming `self` at the
     /// expense of shorter lifetimes.
     #[inline]
-    pub fn into_iter(self) -> ::MutItems<'a, T> {
+    pub fn into_iter(mut self) -> ::MutItems<'a, T> {
         self.base.iter_mut()
+    }
+
+    /// Returns a strided slice containing only the elements from
+    /// indices `from` (inclusive) to `to` (exclusive).
+    ///
+    /// # Panic
+    ///
+    /// Panics if `from > to` or if `to > self.len()`.
+    #[inline]
+    pub fn slice(self, from: uint, to: uint) -> Strided<'a, T> {
+        Strided::new_raw(self.base.slice(from, to))
+    }
+    /// Returns a strided slice containing only the elements from
+    /// index `from` (inclusive).
+    ///
+    /// # Panic
+    ///
+    /// Panics if `from > self.len()`.
+    #[inline]
+    pub fn slice_from(self, from: uint) -> Strided<'a, T> {
+        Strided::new_raw(self.base.slice_from(from))
+    }
+    /// Returns a strided slice containing only the elements to
+    /// index `to` (exclusive).
+    ///
+    /// # Panic
+    ///
+    /// Panics if `to > self.len()`.
+    #[inline]
+    pub fn slice_to(self, to: uint) -> Strided<'a, T> {
+        Strided::new_raw(self.base.slice_to(to))
+    }
+    /// Returns two strided slices, the first with elements up to
+    /// `idx` (exclusive) and the second with elements from `idx`.
+    ///
+    /// This is semantically equivalent to `(self.slice_to(idx),
+    /// self.slice_from(idx))`.
+    ///
+    /// # Panic
+    ///
+    /// Panics if `idx > self.len()`.
+    #[inline]
+    pub fn split_at(self, idx: uint) -> (Strided<'a, T>, Strided<'a, T>) {
+        let (l, r) = self.base.split_at(idx);
+        (Strided::new_raw(l), Strided::new_raw(r))
     }
 }
 

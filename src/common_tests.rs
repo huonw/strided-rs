@@ -48,6 +48,37 @@ fn stride_len() {
 }
 
 #[test]
+#[allow(unused_mut)]
+fn slice_split() {
+    let v = &mut [1u8, 2, 3, 4, 5, 6, 7];
+    let s = Strided::new(v);
+    let (mut l, mut r) = s.substrides2();
+    eq!(l.reborrow(), [1, 3, 5, 7]);
+    eq!(r.reborrow(), [2, 4, 6]);
+
+    eq!(l.reborrow().slice(1, 3), [3, 5]);
+    eq!(l.reborrow().slice(0, 4), [1, 3, 5, 7]);
+    eq!(l.reborrow().slice_to(3), [1, 3, 5]);
+    eq!(l.reborrow().slice_to(0), []);
+    eq!(l.reborrow().slice_from(2), [5, 7]);
+    eq!(l.reborrow().slice_from(4), []);
+
+    let (ll, lr) = l.split_at(2);
+    eq!(ll, [1, 3]);
+    eq!(lr, [5, 7]);
+    {
+        let (rl, rr) = r.reborrow().split_at(0);
+        eq!(rl, []);
+        eq!(rr, [2, 4, 6]);
+    }
+    {
+        let (rl, rr) = r.reborrow().split_at(3);
+        eq!(rl, [2, 4, 6]);
+        eq!(rr, []);
+    }
+}
+
+#[test]
 fn iter() {
     let v = &mut [1u8, 2, 3, 4, 5];
     let s = Strided::new(v);

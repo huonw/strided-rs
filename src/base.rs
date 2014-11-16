@@ -88,7 +88,7 @@ impl<'a, T> Strided<'a, T> {
             _marker: marker::ContravariantLifetime,
         }
     }
-    pub fn iter_mut(&self) -> MutItems<'a, T> {
+    pub fn iter_mut(&mut self) -> MutItems<'a, T> {
         assert!(self.data as uint + self.len * self.stride >= self.data as uint);
         MutItems {
             start: self.data,
@@ -112,6 +112,31 @@ impl<'a, T> Strided<'a, T> {
             unsafe {Some(&mut *self.data.offset((n * self.stride) as int))}
         } else {
             None
+        }
+    }
+
+
+    #[inline]
+    pub fn slice(self, from: uint, to: uint) -> Strided<'a, T> {
+        assert!(from <= to && to <= self.len());
+        unsafe {
+            Strided::new_raw(step(self.data, from * self.stride), to - from, self.stride)
+        }
+    }
+    #[inline]
+    pub fn slice_from(self, from: uint) -> Strided<'a, T> {
+        self.slice(from, self.len())
+    }
+    #[inline]
+    pub fn slice_to(self, to: uint) -> Strided<'a, T> {
+        self.slice(0, to)
+    }
+
+    pub fn split_at(self, idx: uint) -> (Strided<'a, T>, Strided<'a, T>) {
+        assert!(idx <= self.len());
+        unsafe {
+            (Strided::new_raw(self.data, idx, self.stride),
+             Strided::new_raw(step(self.data, idx * self.stride), self.len() - idx, self.stride))
         }
     }
 }
