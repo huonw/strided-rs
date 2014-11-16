@@ -5,7 +5,7 @@ use super::Strided;
 #[test]
 #[should_fail]
 fn no_zero_sized_types() {
-    // FIXME: remove this test
+    // FIX ME: remove this test
     let v = &mut [()];
     Strided::new(v);
 }
@@ -45,6 +45,55 @@ fn stride_len() {
     assert_eq!(a.stride(), 3);
     assert_eq!(b.stride(), 3);
     assert_eq!(c.stride(), 3);
+}
+
+#[test]
+fn show() {
+    assert_eq!(format!("{}", Strided::new(&mut [1u8, 2, 3, 4, 5]).substrides2().0),
+               "[1, 3, 5]".into_string())
+    assert_eq!(format!("{}", Strided::new(&mut [1u8, 2, 3]).substrides2().0),
+               "[1, 3]".into_string())
+    assert_eq!(format!("{}", Strided::new(&mut [1u8]).substrides2().0),
+               "[1]".into_string())
+    assert_eq!(format!("{}", Strided::<u8>::new(&mut []).substrides2().0),
+               "[]".into_string())
+
+    assert_eq!(format!("{:#}", Strided::new(&mut [1u8, 2, 3, 4, 5]).substrides2().0),
+               "1, 3, 5".into_string())
+    assert_eq!(format!("{:#}", Strided::new(&mut [1u8, 2, 3]).substrides2().0),
+               "1, 3".into_string())
+    assert_eq!(format!("{:#}", Strided::new(&mut [1u8]).substrides2().0),
+               "1".into_string())
+    assert_eq!(format!("{:#}", Strided::<u8>::new(&mut []).substrides2().0),
+               "".into_string())}
+
+#[test]
+#[allow(unused_mut)]
+fn comparisons() {
+    use std::f64;
+
+    let v = &mut [1u8, 2, 3, 4, 5];
+    let w = &mut [1, 2, 3, 4, 100];
+    let mut s = Strided::new(v);
+    let mut t = Strided::new(w);
+
+    assert!(s != t);
+    assert!(s == s);
+    assert!(t == t);
+    assert!(s.reborrow().slice_to(4) == t.reborrow().slice_to(4));
+
+    assert_eq!(s.partial_cmp(&t), Some(Less));
+    assert_eq!(s.cmp(&t), Less);
+    assert_eq!(s.partial_cmp(&s), Some(Equal));
+    assert_eq!(s.cmp(&s), Equal);
+    assert_eq!(t.partial_cmp(&s), Some(Greater));
+    assert_eq!(t.cmp(&s), Greater);
+    assert_eq!(t.partial_cmp(&t), Some(Equal));
+    assert_eq!(t.cmp(&t), Equal);
+
+    let v = &mut [1.0, f64::NAN];
+    let mut s = Strided::new(v);
+    assert_eq!(s.partial_cmp(&s), None);
 }
 
 #[test]

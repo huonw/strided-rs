@@ -1,11 +1,19 @@
+use std::fmt::{mod, Show};
 use base;
 use base::Strided as Base;
 
 /// A shared strided slice. This is equivalent to a `&[T]` that only
 /// refers to every `n`th `T`.
 #[repr(C)]
+#[deriving(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Strided<'a,T: 'a> {
     base: Base<'a, T>,
+}
+
+impl<'a, T: Show> Show for Strided<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.base.fmt(f)
+    }
 }
 
 impl<'a, T> Strided<'a, T> {

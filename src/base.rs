@@ -1,8 +1,12 @@
+use std::fmt::{mod, Show};
+use std::iter::order;
 use std::kinds::marker;
 use std::mem;
 use std::num::Int;
 
 #[repr(C)]
+#[deriving(Clone)]
+#[allow(raw_pointer_deriving)]
 pub struct Strided<'a,T: 'a> {
     data: *mut T,
     len: uint,
@@ -10,6 +14,47 @@ pub struct Strided<'a,T: 'a> {
 
     _marker: marker::ContravariantLifetime<'a>,
 }
+
+impl<'a, T: PartialEq> PartialEq for Strided<'a, T> {
+    fn eq(&self, other: &Strided<'a, T>) -> bool {
+        self.len() == other.len() &&
+            order::eq(self.iter(), other.iter())
+    }
+}
+impl<'a, T: Eq> Eq for Strided<'a, T> {}
+
+impl<'a, T: PartialOrd> PartialOrd for Strided<'a, T> {
+    fn partial_cmp(&self, other: &Strided<'a, T>) -> Option<Ordering> {
+        order::partial_cmp(self.iter(), other.iter())
+    }
+}
+impl<'a, T: Ord> Ord for Strided<'a, T> {
+    fn cmp(&self, other: &Strided<'a, T>) -> Ordering {
+        order::cmp(self.iter(), other.iter())
+    }
+}
+
+impl<'a, T: Show> Show for Strided<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if f.flags & (1 << (fmt::rt::FlagAlternate as uint)) == 0 {
+            try!(write!(f, "["));
+        }
+        let mut is_first = true;
+        for x in self.iter() {
+            if is_first {
+                is_first = false;
+            } else {
+                try!(write!(f, ", "));
+            }
+            try!(write!(f, "{}", *x))
+        }
+        if f.flags & (1 << (fmt::rt::FlagAlternate as uint)) == 0 {
+            try!(write!(f, "]"));
+        }
+        Ok(())
+    }
+}
+
 
 unsafe fn step<T>(ptr: *mut T, stride: uint) -> *mut T {
     debug_assert!(stride % mem::size_of::<T>() == 0);

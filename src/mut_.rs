@@ -1,3 +1,4 @@
+use std::fmt::{mod, Show};
 use std::kinds::marker;
 use std::mem;
 use base;
@@ -18,9 +19,33 @@ use base::Strided as Base;
 /// directly into the functions that consume `self` without losing
 /// control of the original slice.
 #[repr(C)]
+// #[deriving(PartialEq, Eq, PartialOrd, Ord)] // FIXME: marker types
 pub struct Strided<'a,T: 'a> {
     base: Base<'a, T>,
     _marker: marker::NoCopy,
+}
+
+impl<'a, T: PartialEq> PartialEq for Strided<'a, T> {
+    fn eq(&self, other: &Strided<'a, T>) -> bool { self.base == other.base }
+}
+impl<'a, T: Eq> Eq for Strided<'a, T> {}
+
+impl<'a, T: PartialOrd> PartialOrd for Strided<'a, T> {
+    fn partial_cmp(&self, other: &Strided<'a, T>) -> Option<Ordering> {
+        self.base.partial_cmp(&other.base)
+    }
+}
+
+impl<'a, T: Ord> Ord for Strided<'a, T> {
+    fn cmp(&self, other: &Strided<'a, T>) -> Ordering {
+        self.base.cmp(&other.base)
+    }
+}
+
+impl<'a, T: Show> Show for Strided<'a, T> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        self.base.fmt(f)
+    }
 }
 
 impl<'a, T> Strided<'a, T> {
