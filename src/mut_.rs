@@ -13,8 +13,8 @@ use base::Strided as Base;
 ///
 /// Many functions in this API take `self` and consume it. The
 /// `reborrow` method is a key part of ensuring that ownership doesn't
-/// disappear completely: it converts a reference `&'b mut
-/// MutStrided<'a, T>` into a `MutStrided<'b, T>`, that is, gives a
+/// disappear completely: it converts a reference
+/// `&'b mut MutStrided<'a, T>` into a `MutStrided<'b, T>`, that is, gives a
 /// by-value slice with a shorter lifetime. This can then be passed
 /// directly into the functions that consume `self` without losing
 /// control of the original slice.

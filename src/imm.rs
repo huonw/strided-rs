@@ -62,7 +62,9 @@ impl<'a, T> Strided<'a, T> {
     /// `MutStride`, since this shared form is `Copy` and so
     /// reborrowing is unnecessary.)
     #[inline(always)]
-    pub fn reborrow<'b>(&'b self) -> Strided<'b, T> {
+    #[cfg(test)]
+    fn reborrow<'b>(&'b self) -> Strided<'b, T> {
+        // only exists to work with tests.
         *self
     }
 
