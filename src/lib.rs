@@ -14,16 +14,16 @@
 //!
 //! This provides functionality through which one can safely and
 //! efficiently manipulate every `n`th element of a slice (even a
-//! mutable one) as close as possible to it being a conventional slice
-//! (stride = 1). This releases one from worries about stride
-//! bookkeeping, aliasing of `&mut` or any `unsafe` code.
+//! mutable one) as close as possible to it being a conventional
+//! slice. This releases one from worries about stride bookkeeping,
+//! aliasing of `&mut` or any `unsafe` code.
 //!
 //! # Quick start
 //!
-//! The work-horse function is `substrides`, which returns an iterator
-//! across a series of `n` new strided slices, each of which points to
-//! every `n`th element, and each of which starts at the next
-//! successive offset. For example, the following has `n = 3`.
+//! The work-horse function is `.substrides(n)`, which returns an
+//! iterator across a series of `n` new strided slices, each of which
+//! points to every `n`th element, and each of which starts at the
+//! next successive offset. For example, the following has `n = 3`.
 //!
 //! ```rust
 //! use strided::MutStrided;
@@ -60,7 +60,8 @@
 //! ```
 //!
 //! A lot of the conventional slice functionality is available, such
-//! as indexing (sugary and non-panicking), iterators and slicing.
+//! as indexing (both sugary and non-panicking), iterators and
+//! slicing.
 //!
 //! ```rust
 //! # use strided::MutStrided;
