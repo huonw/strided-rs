@@ -63,8 +63,7 @@
 //! ```
 //!
 //! A lot of the conventional slice functionality is available, such
-//! as indexing (both sugary and non-panicking), iterators and
-//! slicing.
+//! as indexing, iterators and slicing.
 //!
 //! ```rust
 //! # use strided::MutStrided;
@@ -86,16 +85,26 @@
 //! }
 //! ```
 //!
-//! Many of the methods of `MutStrided` take `self` by-value and so
-//! consume ownership, this makes the `reborrow` method one of the
-//! most important. It converts a `&'b mut MutStrided<'a, T>` to a
-//! `MutStrided<'b, T>`, that is, allows temporarily viewing a strided
-//! slices as one with a shorter lifetime. The temporary can then be
-//! used with the consuming methods, and the parent slice can still be
-//! used after that borrow has finished. For example, all of the
-//! splitting and slicing methods on `MutStrided` consume ownership,
-//! and so `reborrow` is necessary there to continue using, in this
-//! case, `left`.
+//! ## Ownership and `reborrow`
+//!
+//! `MutStrided` has a method `reborrow` which has signature
+//!
+//! ```rust,ignore
+//! pub fn reborrow<'b>(&'b mut self) -> Strided<'b, T>
+//! ```
+//!
+//! That is, it allows temporarily viewing a strided slices as one
+//! with a shorter lifetime. This method is key because many of the
+//! methods on `MutStrided` take `self` by-value and so consume
+//! ownership which is unfortunate if one needs to use a strided slice
+//! multiple times.
+//!
+//! The temporary returned by `reborrow` can be used with the
+//! consuming methods, which allows the parent slice to continuing
+//! being used after that temporary has disappeared. For example, all
+//! of the splitting and slicing methods on `MutStrided` consume
+//! ownership, and so `reborrow` is necessary there to continue using,
+//! in this case, `left`.
 //!
 //! ```rust
 //! # use strided::MutStrided;
