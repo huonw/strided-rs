@@ -24,8 +24,8 @@
 //! `.substrides_mut(n)`, which return an iterator across a series of
 //! `n` new strided slices (shared and mutable, respectively), each of
 //! which points to every `n`th element, and each of which starts at
-//! the next successive offset. For example, the following has `n =
-//! 3`.
+//! the next successive offset. For example, the following has
+//! `n = 3`.
 //!
 //! ```rust
 //! use strided::MutStrided;
@@ -196,7 +196,7 @@
 //!     let mut factor = Complex::new(1., 0.);
 //!
 //!     // combine the subFFTs with the relations:
-//!     //   X_k = E_k + exp(-2πki/N) * O_k
+//!     //   X_k       = E_k + exp(-2πki/N) * O_k
 //!     //   X_{k+N/2} = E_k - exp(-2πki/N) * O_k
 //!     for (even, odd) in start.iter_mut().zip(end.iter_mut()) {
 //!         let twiddled = factor * *odd;
