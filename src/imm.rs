@@ -1,4 +1,5 @@
 use std::fmt::{mod, Show};
+use std::mem;
 use base;
 use base::Strided as Base;
 
@@ -40,7 +41,7 @@ impl<'a, T> Strided<'a, T> {
     /// count of *elements*, not bytes.
     #[inline(always)]
     pub fn stride(&self) -> uint {
-        self.base.stride()
+        self.base.stride() / mem::size_of::<T>()
     }
     /// Returns a pointer to the first element of this strided slice.
     ///

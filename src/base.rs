@@ -146,7 +146,7 @@ impl<'a, T> Strided<'a, T> {
     #[inline]
     pub fn get(&self, n: uint) -> Option<&'a T> {
         if n < self.len {
-            unsafe {Some(&*self.data.offset((n * self.stride) as int))}
+            unsafe {Some(&*step(self.data, n * self.stride))}
         } else {
             None
         }
@@ -154,7 +154,7 @@ impl<'a, T> Strided<'a, T> {
     #[inline]
     pub fn get_mut(&mut self, n: uint) -> Option<&'a mut T> {
         if n < self.len {
-            unsafe {Some(&mut *self.data.offset((n * self.stride) as int))}
+            unsafe {Some(&mut *step(self.data, n * self.stride))}
         } else {
             None
         }
@@ -267,7 +267,7 @@ impl<'a, T> Iterator<Strided<'a, T>> for Substrides<'a, T> {
             }
         }
         if self.x.len > 0 {
-            self.x.data = unsafe {self.x.data.offset(self.base_stride as int)};
+            self.x.data = unsafe {step(self.x.data, self.base_stride)};
         }
         Some(ret)
     }

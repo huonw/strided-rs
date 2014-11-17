@@ -12,7 +12,7 @@ fn no_zero_sized_types() {
 
 #[test]
 fn stride_len() {
-    let v = &mut [1u8, 2, 3, 4, 5];
+    let v = &mut [1u16, 2, 3, 4, 5];
     let mut _s = Strided::new(v);
     assert_eq!(_s.len(), 5);
     assert_eq!(_s.stride(), 1);
@@ -49,22 +49,22 @@ fn stride_len() {
 
 #[test]
 fn show() {
-    assert_eq!(format!("{}", Strided::new(&mut [1u8, 2, 3, 4, 5]).substrides2().0),
+    assert_eq!(format!("{}", Strided::new(&mut [1u16, 2, 3, 4, 5]).substrides2().0),
                "[1, 3, 5]".into_string())
-    assert_eq!(format!("{}", Strided::new(&mut [1u8, 2, 3]).substrides2().0),
+    assert_eq!(format!("{}", Strided::new(&mut [1u16, 2, 3]).substrides2().0),
                "[1, 3]".into_string())
-    assert_eq!(format!("{}", Strided::new(&mut [1u8]).substrides2().0),
+    assert_eq!(format!("{}", Strided::new(&mut [1u16]).substrides2().0),
                "[1]".into_string())
-    assert_eq!(format!("{}", Strided::<u8>::new(&mut []).substrides2().0),
+    assert_eq!(format!("{}", Strided::<u16>::new(&mut []).substrides2().0),
                "[]".into_string())
 
-    assert_eq!(format!("{:#}", Strided::new(&mut [1u8, 2, 3, 4, 5]).substrides2().0),
+    assert_eq!(format!("{:#}", Strided::new(&mut [1u16, 2, 3, 4, 5]).substrides2().0),
                "1, 3, 5".into_string())
-    assert_eq!(format!("{:#}", Strided::new(&mut [1u8, 2, 3]).substrides2().0),
+    assert_eq!(format!("{:#}", Strided::new(&mut [1u16, 2, 3]).substrides2().0),
                "1, 3".into_string())
-    assert_eq!(format!("{:#}", Strided::new(&mut [1u8]).substrides2().0),
+    assert_eq!(format!("{:#}", Strided::new(&mut [1u16]).substrides2().0),
                "1".into_string())
-    assert_eq!(format!("{:#}", Strided::<u8>::new(&mut []).substrides2().0),
+    assert_eq!(format!("{:#}", Strided::<u16>::new(&mut []).substrides2().0),
                "".into_string())}
 
 #[test]
@@ -72,7 +72,7 @@ fn show() {
 fn comparisons() {
     use std::f64;
 
-    let v = &mut [1u8, 2, 3, 4, 5];
+    let v = &mut [1u16, 2, 3, 4, 5];
     let w = &mut [1, 2, 3, 4, 100];
     let mut s = Strided::new(v);
     let mut t = Strided::new(w);
@@ -99,7 +99,7 @@ fn comparisons() {
 #[test]
 #[allow(unused_mut)]
 fn slice_split() {
-    let v = &mut [1u8, 2, 3, 4, 5, 6, 7];
+    let v = &mut [1u16, 2, 3, 4, 5, 6, 7];
     let s = Strided::new(v);
     let (mut l, mut r) = s.substrides2();
     eq!(l.reborrow(), [1, 3, 5, 7]);
@@ -129,7 +129,7 @@ fn slice_split() {
 
 #[test]
 fn iter() {
-    let v = &mut [1u8, 2, 3, 4, 5];
+    let v = &mut [1u16, 2, 3, 4, 5];
     let s = Strided::new(v);
     eq!(s, [1, 2, 3, 4, 5]);
 }
@@ -138,7 +138,7 @@ fn iter() {
 fn substrides2() {
     macro_rules! test {
         ($input: expr, $L: expr, $R: expr) => {{
-            let v: &mut [u8] = &mut $input;
+            let v: &mut [u16] = &mut $input;
             let s = Strided::new(v);
             let (l, r) = s.substrides2();
             eq!(l, $L);
@@ -157,9 +157,9 @@ fn substrides2() {
 fn substrides() {
     macro_rules! test {
         ($n: expr, $input: expr, [$($expected: expr),*]) => {{
-            let v: &mut [u8] = &mut $input;
+            let v: &mut [u16] = &mut $input;
             let s = Strided::new(v);
-            let expected: &[&[_]] = [$({ const X: &'static [u8] = &$expected; X }),*];
+            let expected: &[&[_]] = [$({ const X: &'static [u16] = &$expected; X }),*];
             let mut n = 0u;
             let mut it = s.substrides($n);
             assert_eq!(it.size_hint(), ($n, Some($n)));
@@ -202,7 +202,7 @@ fn get() {
         }}
     }
 
-    let v: &mut [u8] = [1, 2, 3, 4, 5, 6];
+    let v: &mut [u16] = [1, 2, 3, 4, 5, 6];
     let base = Strided::new(v);
     test!(base, [1,2,3,4,5,6]);
     let (l, r) = base.substrides2();
