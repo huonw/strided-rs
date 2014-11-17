@@ -53,7 +53,7 @@
 //! # use strided::MutStrided;
 //! # let mut v = [1u8, 2, 3, 4, 5];
 //! # let mut all = MutStrided::new(&mut v);
-//! let (left, right) = all.reborrow().substrides2();
+//! let (left, right) = all.substrides2();
 //!
 //! assert_eq!(left, MutStrided::new(&mut [1, 3, 5]));
 //! assert_eq!(right, MutStrided::new(&mut [2, 4]));
@@ -67,7 +67,7 @@
 //! # use strided::MutStrided;
 //! # let mut v = [1u8, 2, 3, 4, 5];
 //! # let mut all = MutStrided::new(&mut v);
-//! let (mut left, right) = all.reborrow().substrides2();
+//! let (mut left, right) = all.substrides2();
 //! assert_eq!(left[2], 5);
 //! assert!(right.get(10).is_none()); // out of bounds
 //!
