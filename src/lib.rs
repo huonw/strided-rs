@@ -217,24 +217,9 @@ pub use mut_::Substrides as MutSubstrides;
 pub use imm::Strided as Strided;
 pub use imm::Substrides as Substrides;
 
-macro_rules! eq {
-    ($stride: expr, $expected: expr) => {
-        eq!($stride, $expected, iter)
-    };
 
-    ($stride: expr, $expected: expr, $method: ident) => {{
-        let e: &[_] = $expected;
-        let mut _stride = $stride;
-        assert_eq!(_stride.len(), e.len());
-        let mut iter = _stride.$method();
-        assert_eq!(iter.size_hint(),(e.len(), Some(e.len())));
-        let vals = iter.by_ref().map(|s| *s).collect::<Vec<_>>();
-        if vals.as_slice() != e {
-            panic!("mismatched: {}, {}", vals, e);
-        }
-        assert_eq!(iter.size_hint(),(0, Some(0)));
-    }}
-}
+#[cfg(test)]
+mod common_tests;
 
 mod base;
 mod mut_;
