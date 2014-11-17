@@ -20,10 +20,12 @@
 //!
 //! # Quick start
 //!
-//! The work-horse function is `.substrides(n)`, which returns an
-//! iterator across a series of `n` new strided slices, each of which
-//! points to every `n`th element, and each of which starts at the
-//! next successive offset. For example, the following has `n = 3`.
+//! The work-horse functions are `.substrides(n)` and
+//! `.substrides_mut(n)`, which return an iterator across a series of
+//! `n` new strided slices (shared and mutable, respectively), each of
+//! which points to every `n`th element, and each of which starts at
+//! the next successive offset. For example, the following has `n =
+//! 3`.
 //!
 //! ```rust
 //! use strided::MutStrided;
@@ -31,7 +33,7 @@
 //! let mut v = [1u8, 2, 3, 4, 5];
 //! let mut all = MutStrided::new(&mut v);
 //!
-//! let mut substrides = all.substrides(3);
+//! let mut substrides = all.substrides_mut(3);
 //!
 //! let a = substrides.next().unwrap();
 //! let b = substrides.next().unwrap();
@@ -43,17 +45,18 @@
 //! assert_eq!(c, MutStrided::new(&mut [3]));
 //! ```
 //!
-//! The common case of `n = 2` has an abbreviation `substrides2`,
-//! which takes the liberty of returns a tuple rather than an iterator
-//! to make direct destructuring work. Continuing with the values
-//! above, `left` and `right` point to alternate elements, starting at
-//! index `0` and `1` of their parent slice respectively.
+//! The common case of `n = 2` has an abbreviation `substrides2`
+//! (resp. `substrides2_mut`), which takes the liberty of returns a
+//! tuple rather than an iterator to make direct destructuring
+//! work. Continuing with the values above, `left` and `right` point
+//! to alternate elements, starting at index `0` and `1` of their
+//! parent slice respectively.
 //!
 //! ```rust
 //! # use strided::MutStrided;
 //! # let mut v = [1u8, 2, 3, 4, 5];
 //! # let mut all = MutStrided::new(&mut v);
-//! let (left, right) = all.substrides2();
+//! let (left, right) = all.substrides2_mut();
 //!
 //! assert_eq!(left, MutStrided::new(&mut [1, 3, 5]));
 //! assert_eq!(right, MutStrided::new(&mut [2, 4]));
@@ -67,7 +70,7 @@
 //! # use strided::MutStrided;
 //! # let mut v = [1u8, 2, 3, 4, 5];
 //! # let mut all = MutStrided::new(&mut v);
-//! let (mut left, right) = all.substrides2();
+//! let (mut left, right) = all.substrides2_mut();
 //! assert_eq!(left[2], 5);
 //! assert!(right.get(10).is_none()); // out of bounds
 //!
@@ -98,13 +101,15 @@
 //! # use strided::MutStrided;
 //! # let mut v = [1u8, 2, 3, 4, 5];
 //! # let mut all = MutStrided::new(&mut v);
-//! let (mut left, right) = all.reborrow().substrides2();
-//! assert_eq!(left.reborrow().slice(1, 3), MutStrided::new(&mut [3, 5]));
-//! assert_eq!(left.reborrow().slice_from(2), MutStrided::new(&mut [5]));
-//! assert_eq!(left.reborrow().slice_to(2), MutStrided::new(&mut [1, 3]));
+//! let (mut left, right) = all.substrides2_mut();
+//! assert_eq!(left.reborrow().slice_mut(1, 3), MutStrided::new(&mut [3, 5]));
+//! assert_eq!(left.reborrow().slice_from_mut(2), MutStrided::new(&mut [5]));
+//! assert_eq!(left.reborrow().slice_to_mut(2), MutStrided::new(&mut [1, 3]));
 //!
-//! assert_eq!(right.split_at(1),
+//! // no reborrow:
+//! assert_eq!(right.split_at_mut(1),
 //!            (MutStrided::new(&mut [2]), MutStrided::new(&mut [4])));
+//! // println!("{}", right); // error: use of moved value `right`.
 //! ```
 //!
 //! These contortions are necessary to ensure that `&mut`s cannot
@@ -113,6 +118,9 @@
 //! which they lie in). Theoretically they are necessary with
 //! `&mut []` too, but the compiler inserts implicit reborrows and so
 //! one rarely needs to do them manually.
+//!
+//! In practice, one should only need to insert `reborrow`s if the
+//! compiler complains about the use of a moved value.
 //!
 //! The shared `Strided` is equivalent to `&[]` and only handles `&`
 //! references, making ownership transfer and `reborrow` unnecessary,
@@ -165,7 +173,7 @@
 //!     // split the input into two arrays of alternating elements ("decimate in time")
 //!     let (evens, odds) = input.substrides2();
 //!     // break the output into two halves (front and back, not alternating)
-//!     let (mut start, mut end) = output.split_at(input.len() / 2);
+//!     let (mut start, mut end) = output.split_at_mut(input.len() / 2);
 //!
 //!     // recursively perform two FFTs on alternating elements of the input, writing the
 //!     // results into the first and second half of the output array respectively.

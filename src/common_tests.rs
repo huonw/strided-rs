@@ -49,10 +49,10 @@ macro_rules! substrides {
 
 macro_rules! get {
     ($get: ident, $input: expr, $expected: expr, $($mut_: tt)*) => {{
-        let e = $expected;
+        let mut e = $expected;
         for i in range(0, e.len() + 10) {
             let expected = e.$get(i);
-            assert_eq!($input.$get(i), expected);
+            assert_eq!($input.$get(i).map(|x| *x), expected.as_ref().map(|x| **x));
 
             match expected {
                 Some(x) => assert_eq!(*(&$($mut_)* $input[i]), *x),
@@ -135,7 +135,6 @@ macro_rules! make_tests {
         }
 
         #[test]
-        #[allow(unused_mut)]
         fn comparisons() {
             use std::f64;
 
@@ -159,12 +158,11 @@ macro_rules! make_tests {
             assert_eq!(t.cmp(&t), Equal);
 
             let v = &mut [1.0, f64::NAN];
-            let mut s = Strided::new(v);
+            let s = Strided::new(v);
             assert_eq!(s.partial_cmp(&s), None);
         }
 
         #[test]
-        #[allow(unused_mut)]
         fn slice_split() {
             let v = &mut [1u16, 2, 3, 4, 5, 6, 7];
             let s = Strided::new(v);
@@ -197,7 +195,7 @@ macro_rules! make_tests {
         #[test]
         fn iter() {
             let v = &mut [1u16, 2, 3, 4, 5];
-            let s = Strided::new(v);
+            let mut s = Strided::new(v);
             let mut n = 0u;
             for (x, y) in s.$iter().zip([1,2,3,4,5].iter()) {
                 assert_eq!(*x, *y);
@@ -240,9 +238,9 @@ macro_rules! make_tests {
         #[test]
         fn get() {
             let v: &mut [u16] = [1, 2, 3, 4, 5, 6];
-            let base = Strided::new(v);
+            let mut base = Strided::new(v);
             get!($get, base, [1,2,3,4,5,6], $($mut_)*);
-            let (l, r) = base.$substrides2();
+            let (mut l, mut r) = base.$substrides2();
             get!($get, l, [1,3,5], $($mut_)*);
             get!($get, r, [2,4,6], $($mut_)*)
         }

@@ -190,6 +190,7 @@ impl<'a, T> Iterator<Strided<'a, T>> for Substrides<'a, T> {
 }
 
 #[cfg(test)]
+#[allow(unused_mut)]
 mod tests {
     use super::Strided;
     make_tests!(substrides2, substrides, slice, slice_to, slice_from, split_at, get, iter, )

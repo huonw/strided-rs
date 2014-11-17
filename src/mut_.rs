@@ -107,7 +107,7 @@ impl<'a, T> Strided<'a, T> {
     /// succeed even for mismatched lengths, and even if `self` has
     /// only zero or one elements.
     #[inline]
-    pub fn substrides2(self) -> (Strided<'a, T>, Strided<'a, T>) {
+    pub fn substrides2_mut(self) -> (Strided<'a, T>, Strided<'a, T>) {
         let (l, r) = self.base.substrides2();
         (Strided::new_raw(l), Strided::new_raw(r))
     }
@@ -122,7 +122,7 @@ impl<'a, T> Strided<'a, T> {
     /// (return `n` strided slices) even if `self` has fewer than `n`
     /// elements.
     #[inline]
-    pub fn substrides(self, n: uint) -> Substrides<'a, T> {
+    pub fn substrides_mut(self, n: uint) -> Substrides<'a, T> {
         Substrides {
             base: self.base.substrides(n),
             _marker: marker::NoCopy,
@@ -162,7 +162,7 @@ impl<'a, T> Strided<'a, T> {
     ///
     /// Panics if `from > to` or if `to > self.len()`.
     #[inline]
-    pub fn slice(self, from: uint, to: uint) -> Strided<'a, T> {
+    pub fn slice_mut(self, from: uint, to: uint) -> Strided<'a, T> {
         Strided::new_raw(self.base.slice(from, to))
     }
     /// Returns a strided slice containing only the elements from
@@ -172,7 +172,7 @@ impl<'a, T> Strided<'a, T> {
     ///
     /// Panics if `from > self.len()`.
     #[inline]
-    pub fn slice_from(self, from: uint) -> Strided<'a, T> {
+    pub fn slice_from_mut(self, from: uint) -> Strided<'a, T> {
         Strided::new_raw(self.base.slice_from(from))
     }
     /// Returns a strided slice containing only the elements to
@@ -182,7 +182,7 @@ impl<'a, T> Strided<'a, T> {
     ///
     /// Panics if `to > self.len()`.
     #[inline]
-    pub fn slice_to(self, to: uint) -> Strided<'a, T> {
+    pub fn slice_to_mut(self, to: uint) -> Strided<'a, T> {
         Strided::new_raw(self.base.slice_to(to))
     }
     /// Returns two strided slices, the first with elements up to
@@ -195,7 +195,7 @@ impl<'a, T> Strided<'a, T> {
     ///
     /// Panics if `idx > self.len()`.
     #[inline]
-    pub fn split_at(self, idx: uint) -> (Strided<'a, T>, Strided<'a, T>) {
+    pub fn split_at_mut(self, idx: uint) -> (Strided<'a, T>, Strided<'a, T>) {
         let (l, r) = self.base.split_at(idx);
         (Strided::new_raw(l), Strided::new_raw(r))
     }
@@ -237,43 +237,14 @@ impl<'a, T> Iterator<Strided<'a, T>> for Substrides<'a, T> {
 #[cfg(test)]
 mod tests {
     use super::Strided;
-    make_tests!(substrides2, substrides, slice, slice_to, slice_from, split_at, get, iter, )
+    make_tests!(substrides2_mut, substrides_mut,
+                slice_mut, slice_to_mut, slice_from_mut, split_at_mut, get_mut, iter_mut, mut)
 
     #[test]
     fn reborrow() {
         let v = &mut [1u8, 2, 3, 4, 5];
         let mut s = Strided::new(v);
         eq!(s.reborrow(), [1,2,3,4,5])
-    }
-
-    #[test]
-    fn iter_mut() {
-        let v = &mut [1u8, 2, 3, 4, 5];
-        let s = Strided::new(v);
-        eq!(s, [1, 2, 3, 4, 5], iter_mut);
-    }
-
-    #[test]
-    fn get_mut() {
-        macro_rules! test {
-            ($input: expr, $expected: expr) => {{
-                let mut e = $expected;
-                for i in range(0, e.len() + 10) {
-                    let expected = e.get_mut(i);
-                    assert_eq!($input.get_mut(i).map(|x| *x), expected.as_ref().map(|x| **x));
-                    match expected {
-                        Some(x) => assert_eq!(*(&mut $input[i]), *x),
-                        None => {}
-                    }
-                }
-            }}
-        }
-
-        let v: &mut [u8] = [1, 2, 3, 4, 5, 6];
-        let mut base = Strided::new(v);
-        test!(base, [1,2,3,4,5,6]);
-        let (mut l, mut r) = base.substrides2();
-        test!(l, [1,3,5]);
-        test!(r, [2,4,6])
+        eq!(s.reborrow(), [1,2,3,4,5])
     }
 }
