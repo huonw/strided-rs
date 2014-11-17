@@ -176,7 +176,7 @@
 //!     // exp(-2πi/N)
 //!     let twiddle = Complex::from_polar(&1.0, &(-two_pi / input.len() as f64));
 //!
-//!     let mut factor = Complex::one();
+//!     let mut factor = Complex::new(1., 0.);
 //!
 //!     // combine the subFFTs with the relations:
 //!     //   X_k = E_k + exp(-2πki/N) * O_k
@@ -203,7 +203,9 @@
 //!
 //! The above definitely has complexity `O(n log n)`, but it has a
 //! much larger constant factor than an optimised library like
-//! [FFTW](http://www.fftw.org/).
+//! [FFTW](http://www.fftw.org/). (Strictly speaking `output` does not
+//! need to be a strided slice, since it is never split into
+//! alternating elements.)
 
 #[cfg(test)] extern crate test;
 
