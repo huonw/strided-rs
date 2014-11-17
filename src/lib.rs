@@ -2,7 +2,7 @@
 
 //! Strided slices.
 //!
-//! This library provides two types `Strided` and `MutStrided` as
+//! This library provides two types `Stride` and `MutStride` as
 //! generalised forms of `&[T]` and `&mut [T]` respectively, where the
 //! elements are regularly spaced in memory, but not necessarily
 //! immediately adjacently.
@@ -28,10 +28,10 @@
 //! `n = 3`.
 //!
 //! ```rust
-//! use strided::MutStrided;
+//! use strided::MutStride;
 //!
 //! let mut v = [1u8, 2, 3, 4, 5];
-//! let mut all = MutStrided::new(&mut v);
+//! let mut all = MutStride::new(&mut v);
 //!
 //! let mut substrides = all.substrides_mut(3);
 //!
@@ -40,9 +40,9 @@
 //! let c = substrides.next().unwrap();
 //! assert!(substrides.next().is_none()); // there was exactly 3.
 //!
-//! assert_eq!(a, MutStrided::new(&mut [1, 4]));
-//! assert_eq!(b, MutStrided::new(&mut [2, 5]));
-//! assert_eq!(c, MutStrided::new(&mut [3]));
+//! assert_eq!(a, MutStride::new(&mut [1, 4]));
+//! assert_eq!(b, MutStride::new(&mut [2, 5]));
+//! assert_eq!(c, MutStride::new(&mut [3]));
 //! ```
 //!
 //! The common case of `n = 2` has an abbreviation `substrides2`
@@ -53,22 +53,22 @@
 //! parent slice respectively.
 //!
 //! ```rust
-//! # use strided::MutStrided;
+//! # use strided::MutStride;
 //! # let mut v = [1u8, 2, 3, 4, 5];
-//! # let mut all = MutStrided::new(&mut v);
+//! # let mut all = MutStride::new(&mut v);
 //! let (left, right) = all.substrides2_mut();
 //!
-//! assert_eq!(left, MutStrided::new(&mut [1, 3, 5]));
-//! assert_eq!(right, MutStrided::new(&mut [2, 4]));
+//! assert_eq!(left, MutStride::new(&mut [1, 3, 5]));
+//! assert_eq!(right, MutStride::new(&mut [2, 4]));
 //! ```
 //!
 //! A lot of the conventional slice functionality is available, such
 //! as indexing, iterators and slicing.
 //!
 //! ```rust
-//! # use strided::MutStrided;
+//! # use strided::MutStride;
 //! # let mut v = [1u8, 2, 3, 4, 5];
-//! # let mut all = MutStrided::new(&mut v);
+//! # let mut all = MutStride::new(&mut v);
 //! let (mut left, right) = all.substrides2_mut();
 //! assert_eq!(left[2], 5);
 //! assert!(right.get(10).is_none()); // out of bounds
@@ -87,37 +87,39 @@
 //!
 //! ## Ownership and `reborrow`
 //!
-//! `MutStrided` has a method `reborrow` which has signature
+//! `MutStride` has a method `reborrow` which has signature
 //!
 //! ```rust,ignore
-//! pub fn reborrow<'b>(&'b mut self) -> Strided<'b, T>
+//! impl<'a, T> MutStride<'a, T> {
+//!     pub fn reborrow<'b>(&'b mut self) -> MutStride<'b, T> { ... }
+//! }
 //! ```
 //!
 //! That is, it allows temporarily viewing a strided slices as one
 //! with a shorter lifetime. This method is key because many of the
-//! methods on `MutStrided` take `self` by-value and so consume
+//! methods on `MutStride` take `self` by-value and so consume
 //! ownership which is unfortunate if one needs to use a strided slice
 //! multiple times.
 //!
 //! The temporary returned by `reborrow` can be used with the
 //! consuming methods, which allows the parent slice to continuing
 //! being used after that temporary has disappeared. For example, all
-//! of the splitting and slicing methods on `MutStrided` consume
+//! of the splitting and slicing methods on `MutStride` consume
 //! ownership, and so `reborrow` is necessary there to continue using,
 //! in this case, `left`.
 //!
 //! ```rust
-//! # use strided::MutStrided;
+//! # use strided::MutStride;
 //! # let mut v = [1u8, 2, 3, 4, 5];
-//! # let mut all = MutStrided::new(&mut v);
+//! # let mut all = MutStride::new(&mut v);
 //! let (mut left, right) = all.substrides2_mut();
-//! assert_eq!(left.reborrow().slice_mut(1, 3), MutStrided::new(&mut [3, 5]));
-//! assert_eq!(left.reborrow().slice_from_mut(2), MutStrided::new(&mut [5]));
-//! assert_eq!(left.reborrow().slice_to_mut(2), MutStrided::new(&mut [1, 3]));
+//! assert_eq!(left.reborrow().slice_mut(1, 3), MutStride::new(&mut [3, 5]));
+//! assert_eq!(left.reborrow().slice_from_mut(2), MutStride::new(&mut [5]));
+//! assert_eq!(left.reborrow().slice_to_mut(2), MutStride::new(&mut [1, 3]));
 //!
 //! // no reborrow:
 //! assert_eq!(right.split_at_mut(1),
-//!            (MutStrided::new(&mut [2]), MutStrided::new(&mut [4])));
+//!            (MutStride::new(&mut [2]), MutStride::new(&mut [4])));
 //! // println!("{}", right); // error: use of moved value `right`.
 //! ```
 //!
@@ -131,7 +133,7 @@
 //! In practice, one should only need to insert `reborrow`s if the
 //! compiler complains about the use of a moved value.
 //!
-//! The shared `Strided` is equivalent to `&[]` and only handles `&`
+//! The shared `Stride` is equivalent to `&[]` and only handles `&`
 //! references, making ownership transfer and `reborrow` unnecessary,
 //! so all its methods act identically to those on `&[]`.
 //!
@@ -166,10 +168,10 @@
 //! extern crate num; // https://github.com/rust-lang/num
 //! use std::num::{Int, Float};
 //! use num::complex::{Complex, Complex64};
-//! use strided::{MutStrided, Strided};
+//! use strided::{MutStride, Stride};
 //!
 //! /// Writes the forward DFT of `input` to `output`.
-//! fn fft(input: Strided<Complex64>, mut output: MutStrided<Complex64>) {
+//! fn fft(input: Stride<Complex64>, mut output: MutStride<Complex64>) {
 //!     // check it's a power of two.
 //!     assert!(input.len() == output.len() && input.len().count_ones() == 1);
 //!
@@ -213,7 +215,7 @@
 //!              Complex::new(2., 0.), Complex::new(1., 0.)];
 //!     let mut b = [Complex::new(0., 0.), .. 4];
 //!
-//!     fft(Strided::new(&a), MutStrided::new(&mut b));
+//!     fft(Stride::new(&a), MutStride::new(&mut b));
 //!     println!("forward: {} -> {}", a.as_slice(), b.as_slice());
 //! }
 //! ```
@@ -228,10 +230,10 @@
 
 pub use base::{Items, MutItems};
 
-pub use mut_::Strided as MutStrided;
+pub use mut_::Stride as MutStride;
 pub use mut_::Substrides as MutSubstrides;
 
-pub use imm::Strided as Strided;
+pub use imm::Stride as Stride;
 pub use imm::Substrides as Substrides;
 
 
@@ -245,7 +247,7 @@ mod imm;
 
 #[cfg(test)]
 mod bench {
-    use super::Strided;
+    use super::Stride;
     use test::Bencher as B;
     use test;
 
@@ -263,7 +265,7 @@ mod bench {
     #[bench]
     fn iter_step_1(b: &mut B) {
         let v = Vec::from_fn(N, |i| i);
-        let s = Strided::new(&*v);
+        let s = Stride::new(&*v);
         b.iter(|| {
             test::black_box(&s);
             for e in s.iter() { test::black_box(e) }
@@ -273,7 +275,7 @@ mod bench {
     #[bench]
     fn iter_step_13(b: &mut B) {
         let v = Vec::from_fn(N * 13, |i| i);
-        let s = Strided::new(&*v);
+        let s = Stride::new(&*v);
         let s = s.substrides(13).next().unwrap();
         b.iter(|| {
             test::black_box(&s);

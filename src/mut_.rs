@@ -2,7 +2,7 @@ use std::fmt::{mod, Show};
 use std::kinds::marker;
 use std::mem;
 use base;
-use base::Strided as Base;
+use base::Stride as Base;
 
 /// A mutable strided slice. This is equivalent to `&mut [T]`, that
 /// only refers to every `n`th `T`.
@@ -14,44 +14,44 @@ use base::Strided as Base;
 /// Many functions in this API take `self` and consume it. The
 /// `reborrow` method is a key part of ensuring that ownership doesn't
 /// disappear completely: it converts a reference
-/// `&'b mut MutStrided<'a, T>` into a `MutStrided<'b, T>`, that is, gives a
+/// `&'b mut MutStride<'a, T>` into a `MutStride<'b, T>`, that is, gives a
 /// by-value slice with a shorter lifetime. This can then be passed
 /// directly into the functions that consume `self` without losing
 /// control of the original slice.
 #[repr(C)]
 // #[deriving(PartialEq, Eq, PartialOrd, Ord)] // FIXME: marker types
-pub struct Strided<'a,T: 'a> {
+pub struct Stride<'a,T: 'a> {
     base: Base<'a, T>,
     _marker: marker::NoCopy,
 }
 
-impl<'a, T: PartialEq> PartialEq for Strided<'a, T> {
-    fn eq(&self, other: &Strided<'a, T>) -> bool { self.base == other.base }
+impl<'a, T: PartialEq> PartialEq for Stride<'a, T> {
+    fn eq(&self, other: &Stride<'a, T>) -> bool { self.base == other.base }
 }
-impl<'a, T: Eq> Eq for Strided<'a, T> {}
+impl<'a, T: Eq> Eq for Stride<'a, T> {}
 
-impl<'a, T: PartialOrd> PartialOrd for Strided<'a, T> {
-    fn partial_cmp(&self, other: &Strided<'a, T>) -> Option<Ordering> {
+impl<'a, T: PartialOrd> PartialOrd for Stride<'a, T> {
+    fn partial_cmp(&self, other: &Stride<'a, T>) -> Option<Ordering> {
         self.base.partial_cmp(&other.base)
     }
 }
 
-impl<'a, T: Ord> Ord for Strided<'a, T> {
-    fn cmp(&self, other: &Strided<'a, T>) -> Ordering {
+impl<'a, T: Ord> Ord for Stride<'a, T> {
+    fn cmp(&self, other: &Stride<'a, T>) -> Ordering {
         self.base.cmp(&other.base)
     }
 }
 
-impl<'a, T: Show> Show for Strided<'a, T> {
+impl<'a, T: Show> Show for Stride<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.base.fmt(f)
     }
 }
 
-impl<'a, T> Strided<'a, T> {
+impl<'a, T> Stride<'a, T> {
     #[inline(always)]
-    fn new_raw(base: Base<'a, T>) -> Strided<'a, T> {
-        Strided {
+    fn new_raw(base: Base<'a, T>) -> Stride<'a, T> {
+        Stride {
             base: base,
             _marker: marker::NoCopy
         }
@@ -60,8 +60,8 @@ impl<'a, T> Strided<'a, T> {
     /// Creates a new strided slice directly from a conventional
     /// slice. The return value has stride 1.
     #[inline(always)]
-    pub fn new(x: &'a mut [T]) -> Strided<'a, T> {
-        Strided::new_raw(Base::new(x.as_mut_ptr(), x.len(), 1))
+    pub fn new(x: &'a mut [T]) -> Stride<'a, T> {
+        Stride::new_raw(Base::new(x.as_mut_ptr(), x.len(), 1))
     }
 
     /// Returns the number of elements accessible in `self`.
@@ -94,8 +94,8 @@ impl<'a, T> Strided<'a, T> {
     /// to allow the by-value `self` methods to be used without losing
     /// access to the slice.
     #[inline(always)]
-    pub fn reborrow<'b>(&'b mut self) -> Strided<'b, T> {
-        Strided::new_raw(self.base)
+    pub fn reborrow<'b>(&'b mut self) -> Stride<'b, T> {
+        Stride::new_raw(self.base)
     }
 
     /// Breaks this strided slice into two strided slices pointing to
@@ -107,9 +107,9 @@ impl<'a, T> Strided<'a, T> {
     /// succeed even for mismatched lengths, and even if `self` has
     /// only zero or one elements.
     #[inline]
-    pub fn substrides2_mut(self) -> (Strided<'a, T>, Strided<'a, T>) {
+    pub fn substrides2_mut(self) -> (Stride<'a, T>, Stride<'a, T>) {
         let (l, r) = self.base.substrides2();
-        (Strided::new_raw(l), Strided::new_raw(r))
+        (Stride::new_raw(l), Stride::new_raw(r))
     }
 
     /// Returns an iterator over `n` strided subslices of `self` each
@@ -162,8 +162,8 @@ impl<'a, T> Strided<'a, T> {
     ///
     /// Panics if `from > to` or if `to > self.len()`.
     #[inline]
-    pub fn slice_mut(self, from: uint, to: uint) -> Strided<'a, T> {
-        Strided::new_raw(self.base.slice(from, to))
+    pub fn slice_mut(self, from: uint, to: uint) -> Stride<'a, T> {
+        Stride::new_raw(self.base.slice(from, to))
     }
     /// Returns a strided slice containing only the elements from
     /// index `from` (inclusive).
@@ -172,8 +172,8 @@ impl<'a, T> Strided<'a, T> {
     ///
     /// Panics if `from > self.len()`.
     #[inline]
-    pub fn slice_from_mut(self, from: uint) -> Strided<'a, T> {
-        Strided::new_raw(self.base.slice_from(from))
+    pub fn slice_from_mut(self, from: uint) -> Stride<'a, T> {
+        Stride::new_raw(self.base.slice_from(from))
     }
     /// Returns a strided slice containing only the elements to
     /// index `to` (exclusive).
@@ -182,8 +182,8 @@ impl<'a, T> Strided<'a, T> {
     ///
     /// Panics if `to > self.len()`.
     #[inline]
-    pub fn slice_to_mut(self, to: uint) -> Strided<'a, T> {
-        Strided::new_raw(self.base.slice_to(to))
+    pub fn slice_to_mut(self, to: uint) -> Stride<'a, T> {
+        Stride::new_raw(self.base.slice_to(to))
     }
     /// Returns two strided slices, the first with elements up to
     /// `idx` (exclusive) and the second with elements from `idx`.
@@ -195,20 +195,20 @@ impl<'a, T> Strided<'a, T> {
     ///
     /// Panics if `idx > self.len()`.
     #[inline]
-    pub fn split_at_mut(self, idx: uint) -> (Strided<'a, T>, Strided<'a, T>) {
+    pub fn split_at_mut(self, idx: uint) -> (Stride<'a, T>, Stride<'a, T>) {
         let (l, r) = self.base.split_at(idx);
-        (Strided::new_raw(l), Strided::new_raw(r))
+        (Stride::new_raw(l), Stride::new_raw(r))
     }
 }
 
-impl<'a, T> IndexMut<uint, T> for Strided<'a, T> {
+impl<'a, T> IndexMut<uint, T> for Stride<'a, T> {
     fn index_mut<'b>(&'b mut self, n: &uint) -> &'b mut T {
-        self.get_mut(*n).expect("Strided.index_mut: index out of bounds")
+        self.get_mut(*n).expect("Stride.index_mut: index out of bounds")
     }
 }
 
-impl<'a, T> Deref<::imm::Strided<'a, T>> for Strided<'a, T> {
-    fn deref<'b>(&'b self) -> &'b ::imm::Strided<'a, T> {
+impl<'a, T> Deref<::imm::Stride<'a, T>> for Stride<'a, T> {
+    fn deref<'b>(&'b self) -> &'b ::imm::Stride<'a, T> {
         unsafe { mem::transmute(self) }
     }
 }
@@ -221,10 +221,10 @@ pub struct Substrides<'a, T: 'a> {
     _marker: marker::NoCopy
 }
 
-impl<'a, T> Iterator<Strided<'a, T>> for Substrides<'a, T> {
-    fn next(&mut self) -> Option<Strided<'a, T>> {
+impl<'a, T> Iterator<Stride<'a, T>> for Substrides<'a, T> {
+    fn next(&mut self) -> Option<Stride<'a, T>> {
         match self.base.next() {
-            Some(s) => Some(Strided::new_raw(s)),
+            Some(s) => Some(Stride::new_raw(s)),
             None => None
         }
     }
@@ -236,14 +236,14 @@ impl<'a, T> Iterator<Strided<'a, T>> for Substrides<'a, T> {
 
 #[cfg(test)]
 mod tests {
-    use super::Strided;
+    use super::Stride;
     make_tests!(substrides2_mut, substrides_mut,
                 slice_mut, slice_to_mut, slice_from_mut, split_at_mut, get_mut, iter_mut, mut)
 
     #[test]
     fn reborrow() {
         let v = &mut [1u8, 2, 3, 4, 5];
-        let mut s = Strided::new(v);
+        let mut s = Stride::new(v);
         eq!(s.reborrow(), [1,2,3,4,5])
         eq!(s.reborrow(), [1,2,3,4,5])
     }
