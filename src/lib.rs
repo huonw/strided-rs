@@ -237,13 +237,15 @@ pub use imm::Stride as Stride;
 pub use imm::Substrides as Substrides;
 
 
+pub use traits::{Strided, MutStrided};
+
 #[cfg(test)]
 mod common_tests;
 
 mod base;
 mod mut_;
 mod imm;
-
+mod traits;
 
 #[cfg(test)]
 mod bench {
