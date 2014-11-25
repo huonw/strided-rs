@@ -36,7 +36,7 @@ impl<'a, T: Ord> Ord for Stride<'a, T> {
 
 impl<'a, T: Show> Show for Stride<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if f.flags & (1 << (fmt::rt::FlagAlternate as uint)) == 0 {
+        if f.flags() & (1 << (fmt::rt::FlagAlternate as uint)) == 0 {
             try!(write!(f, "["));
         }
         let mut is_first = true;
@@ -48,7 +48,7 @@ impl<'a, T: Show> Show for Stride<'a, T> {
             }
             try!(write!(f, "{}", *x))
         }
-        if f.flags & (1 << (fmt::rt::FlagAlternate as uint)) == 0 {
+        if f.flags() & (1 << (fmt::rt::FlagAlternate as uint)) == 0 {
             try!(write!(f, "]"));
         }
         Ok(())

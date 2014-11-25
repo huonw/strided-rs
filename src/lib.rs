@@ -166,7 +166,8 @@
 //! ```rust
 //! extern crate strided;
 //! extern crate num; // https://github.com/rust-lang/num
-//! use std::num::{Int, Float};
+//! use std::num::Int;
+//! use std::f64;
 //! use num::complex::{Complex, Complex64};
 //! use strided::{MutStride, Stride};
 //!
@@ -191,9 +192,8 @@
 //!     fft(evens, start.reborrow());
 //!     fft(odds, end.reborrow());
 //!
-//!     let two_pi: f64 = Float::two_pi();
 //!     // exp(-2πi/N)
-//!     let twiddle = Complex::from_polar(&1.0, &(-two_pi / input.len() as f64));
+//!     let twiddle = Complex::from_polar(&1.0, &(-2.0 * f64::consts::PI / input.len() as f64));
 //!
 //!     let mut factor = Complex::new(1., 0.);
 //!

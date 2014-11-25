@@ -2,8 +2,12 @@
 #![macro_escape]
 
 macro_rules! eq {
-    ($stride: expr, $expected: expr) => {
+    (noref $stride: expr, $expected: expr) => {
         eq!($stride, $expected, iter)
+    };
+
+    ($stride: expr, $expected: expr) => {
+        eq!($stride, &$expected, iter)
     };
 
     ($stride: expr, $expected: expr, $method: ident) => {{
@@ -34,12 +38,12 @@ macro_rules! substrides {
     ($substrides: ident, $n: expr, $input: expr, [$($expected: expr),*]) => {{
         let v: &mut [u16] = &mut $input;
         let s = Stride::new(v);
-        let expected: &[&[_]] = [$({ const X: &'static [u16] = &$expected; X }),*];
+        let expected: &[&[_]] = &[$({ const X: &'static [u16] = &$expected; X }),*];
         let mut n = 0u;
         let mut it = s.substrides($n);
         assert_eq!(it.size_hint(), ($n, Some($n)));
         for (test, real) in it.by_ref().zip(expected.iter()) {
-            eq!(test, *real);
+            eq!(noref test, *real);
             n += 1;
         }
         assert_eq!(it.size_hint(), (0, Some(0)));
@@ -237,7 +241,7 @@ macro_rules! make_tests {
 
         #[test]
         fn get() {
-            let v: &mut [u16] = [1, 2, 3, 4, 5, 6];
+            let v: &mut [u16] = &mut [1, 2, 3, 4, 5, 6];
             let mut base = Stride::new(v);
             get!($get, base, [1,2,3,4,5,6], $($mut_)*);
             let (mut l, mut r) = base.$substrides2();
