@@ -15,6 +15,8 @@ pub struct Stride<'a,T: 'a> {
     _marker: marker::ContravariantLifetime<'a>,
 }
 
+impl<'a, T> Copy for Stride<'a, T> {}
+
 impl<'a, T: PartialEq> PartialEq for Stride<'a, T> {
     fn eq(&self, other: &Stride<'a, T>) -> bool {
         self.len() == other.len() &&
@@ -139,7 +141,7 @@ impl<'a, T> Stride<'a, T> {
             start: self.data,
             end: unsafe {step(self.data, self.stride * self.len)},
             stride: self.stride,
-            _marker: (marker::ContravariantLifetime, marker::NoCopy),
+            _marker: marker::ContravariantLifetime,
         }
     }
 
@@ -228,6 +230,8 @@ macro_rules! iterator {
 
 /// An iterator over shared references to the elements of a strided
 /// slice.
+#[allow(raw_pointer_deriving)]
+#[deriving(Copy)]
 pub struct Items<'a, T: 'a> {
     start: *const T,
     end: *const T,
@@ -242,7 +246,7 @@ pub struct MutItems<'a, T: 'a> {
     start: *mut T,
     end: *mut T,
     stride: uint,
-    _marker: (marker::ContravariantLifetime<'a>, marker::NoCopy),
+    _marker: marker::ContravariantLifetime<'a>,
 }
 iterator!(MutItems -> &'a mut T)
 

@@ -10,6 +10,7 @@ use base::Stride as Base;
 pub struct Stride<'a,T: 'a> {
     base: Base<'a, T>,
 }
+impl<'a, T> Copy for Stride<'a, T> {}
 
 impl<'a, T: Show> Show for Stride<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
