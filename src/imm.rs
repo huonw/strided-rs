@@ -77,8 +77,8 @@ impl<'a, T> Stride<'a, T> {
     /// That is, it doubles the stride and (approximately) halves the
     /// length. A slice pointing to values `[1, 2, 3, 4, 5]` becomes
     /// two slices `[1, 3, 5]` and `[2, 4]`. This is guaranteed to
-    /// succeed even for mismatched lengths, and even if `self` has
-    /// only zero or one elements.
+    /// succeed even if `self.len()` is odd, and even if `self`
+    /// has only zero or one elements.
     #[inline]
     pub fn substrides2(&self) -> (Stride<'a, T>, Stride<'a, T>) {
         let (l, r) = self.base.substrides2();
@@ -93,7 +93,7 @@ impl<'a, T> Stride<'a, T> {
     /// 7]` will yield, in turn, `[1, 4, 7]`, `[2, 5]` and finally
     /// `[3, 6]`. Like with `split2` this is guaranteed to succeed
     /// (return `n` strided slices) even if `self` has fewer than `n`
-    /// elements.
+    /// elements and if `self.len()` is not a multiple of `n`.
     #[inline]
     pub fn substrides(&self, n: uint) -> Substrides<'a, T> {
         Substrides {

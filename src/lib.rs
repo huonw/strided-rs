@@ -98,8 +98,8 @@
 //! That is, it allows temporarily viewing a strided slices as one
 //! with a shorter lifetime. This method is key because many of the
 //! methods on `MutStride` take `self` by-value and so consume
-//! ownership which is unfortunate if one needs to use a strided slice
-//! multiple times.
+//! ownership... which is rather unfortunate if one wants to use a
+//! strided slice multiple times.
 //!
 //! The temporary returned by `reborrow` can be used with the
 //! consuming methods, which allows the parent slice to continuing
@@ -157,7 +157,7 @@
 //! very natural way.
 //!
 //! Below is an implementation of the radix-2 case, that is, when the
-//! length `n` is a power of two, in this case, only two strided
+//! length `n` is a power of two. In this case, only two strided
 //! subarrays are necessary: exactly the alternating ones provided by
 //! `substrides2`. Note the use of `reborrow` to allow `start` and
 //! `end` to be used for the recursive `fft` calls and then again
