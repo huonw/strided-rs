@@ -238,7 +238,7 @@ pub struct Items<'a, T: 'a> {
     stride: uint,
     _marker: marker::ContravariantLifetime<'a>,
 }
-iterator!(Items -> &'a T)
+iterator!(Items -> &'a T);
 
 /// An iterator over mutable references to the elements of a strided
 /// slice.
@@ -248,7 +248,7 @@ pub struct MutItems<'a, T: 'a> {
     stride: uint,
     _marker: marker::ContravariantLifetime<'a>,
 }
-iterator!(MutItems -> &'a mut T)
+iterator!(MutItems -> &'a mut T);
 
 pub struct Substrides<'a, T: 'a> {
     x: Stride<'a, T>,

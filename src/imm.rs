@@ -194,5 +194,5 @@ impl<'a, T> Iterator<Stride<'a, T>> for Substrides<'a, T> {
 #[allow(unused_mut)]
 mod tests {
     use super::Stride;
-    make_tests!(substrides2, substrides, slice, slice_to, slice_from, split_at, get, iter, )
+    make_tests!(substrides2, substrides, slice, slice_to, slice_from, split_at, get, iter, );
 }

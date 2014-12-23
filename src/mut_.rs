@@ -238,13 +238,13 @@ impl<'a, T> Iterator<Stride<'a, T>> for Substrides<'a, T> {
 mod tests {
     use super::Stride;
     make_tests!(substrides2_mut, substrides_mut,
-                slice_mut, slice_to_mut, slice_from_mut, split_at_mut, get_mut, iter_mut, mut)
+                slice_mut, slice_to_mut, slice_from_mut, split_at_mut, get_mut, iter_mut, mut);
 
     #[test]
     fn reborrow() {
         let v = &mut [1u8, 2, 3, 4, 5];
         let mut s = Stride::new(v);
-        eq!(s.reborrow(), [1,2,3,4,5])
-        eq!(s.reborrow(), [1,2,3,4,5])
+        eq!(s.reborrow(), [1,2,3,4,5]);
+        eq!(s.reborrow(), [1,2,3,4,5]);
     }
 }

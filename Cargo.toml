@@ -20,4 +20,4 @@ immediately adjacently.
 """
 
 [dev-dependencies]
-num = "~0.0.5"
+num = "~0.1.2"
