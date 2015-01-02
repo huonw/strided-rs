@@ -257,7 +257,7 @@ mod bench {
 
     #[bench]
     fn iter_slice(b: &mut B) {
-        let v = Vec::from_fn(N, |i| i);
+        let v = range(0, N).collect::<Vec<_>>();
         b.iter(|| {
             test::black_box(&v);
             for e in v.iter() { test::black_box(e) }
@@ -266,7 +266,7 @@ mod bench {
 
     #[bench]
     fn iter_step_1(b: &mut B) {
-        let v = Vec::from_fn(N, |i| i);
+        let v = range(0, N).collect::<Vec<_>>();
         let s = Stride::new(&*v);
         b.iter(|| {
             test::black_box(&s);
@@ -276,7 +276,7 @@ mod bench {
 
     #[bench]
     fn iter_step_13(b: &mut B) {
-        let v = Vec::from_fn(N * 13, |i| i);
+        let v = range(0, 13 * N).collect::<Vec<_>>();
         let s = Stride::new(&*v);
         let s = s.substrides(13).next().unwrap();
         b.iter(|| {

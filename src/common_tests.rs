@@ -205,7 +205,7 @@ macro_rules! make_tests {
                 assert_eq!(*x, *y);
                 n += 1;
             }
-            assert_eq!(n, 5)
+            assert_eq!(n, 5);
             let mut n = 0u;
             for (x, y) in (s.$substrides2().0).$iter().zip([1,3,5].iter()) {
                 assert_eq!(*x, *y);
