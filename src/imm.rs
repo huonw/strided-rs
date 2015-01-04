@@ -1,12 +1,13 @@
-use std::fmt::{mod, Show};
+use std::fmt::{self, Show};
 use std::mem;
+use std::ops::Index;
 use base;
 use base::Stride as Base;
 
 /// A shared strided slice. This is equivalent to a `&[T]` that only
 /// refers to every `n`th `T`.
 #[repr(C)]
-#[deriving(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Stride<'a,T: 'a> {
     base: Base<'a, T>,
 }

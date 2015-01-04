@@ -141,6 +141,7 @@ macro_rules! make_tests {
         #[test]
         fn comparisons() {
             use std::f64;
+            use std::cmp::Ordering::{Less, Equal, Greater};
 
             let v = &mut [1u16, 2, 3, 4, 5];
             let w = &mut [1, 2, 3, 4, 100];

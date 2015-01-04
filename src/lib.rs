@@ -1,4 +1,4 @@
-#![feature(macro_rules)]
+#![feature(macro_rules, associated_types)]
 
 //! Strided slices.
 //!
@@ -213,7 +213,7 @@
 //! fn main() {
 //!     let a = [Complex::new(2., 0.), Complex::new(1., 0.),
 //!              Complex::new(2., 0.), Complex::new(1., 0.)];
-//!     let mut b = [Complex::new(0., 0.), .. 4];
+//!     let mut b = [Complex::new(0., 0.); 4];
 //!
 //!     fft(Stride::new(&a), MutStride::new(&mut b));
 //!     println!("forward: {} -> {}", a.as_slice(), b.as_slice());

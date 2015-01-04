@@ -1,11 +1,12 @@
-use std::fmt::{mod, Show};
+use std::cmp::Ordering;
+use std::fmt::{self, Show};
 use std::iter::order;
 use std::kinds::marker;
 use std::mem;
 use std::num::Int;
 
 #[repr(C)]
-#[deriving(Clone)]
+#[derive(Clone)]
 #[allow(raw_pointer_deriving)]
 pub struct Stride<'a,T: 'a> {
     data: *mut T,
@@ -231,7 +232,7 @@ macro_rules! iterator {
 /// An iterator over shared references to the elements of a strided
 /// slice.
 #[allow(raw_pointer_deriving)]
-#[deriving(Copy)]
+#[derive(Copy)]
 pub struct Items<'a, T: 'a> {
     start: *const T,
     end: *const T,

@@ -1,4 +1,5 @@
 use {Stride, MutStride};
+use std::ops::{Deref, DerefMut};
 
 /// Things that can be viewed as a series of equally spaced `T`s in
 /// memory.
@@ -17,7 +18,7 @@ pub trait MutStrided<T> for Sized? : Strided<T> {
 }
 
 // this isn't as general as it could be.
-impl<T, X: Deref<[T]>> Strided<T> for X {
+impl<T, X: Deref<Target=[T]>> Strided<T> for X {
     fn as_stride(&self) -> Stride<T> {
         Stride::new(&**self)
     }
@@ -27,7 +28,7 @@ impl<T, X: Deref<[T]>> Strided<T> for X {
         1
     }
 }
-impl<T, X: DerefMut<[T]>> MutStrided<T> for X {
+impl<T, X: DerefMut + Deref<Target=[T]>> MutStrided<T> for X {
     fn as_stride_mut(&mut self) -> MutStride<T> {
         MutStride::new(&mut **self)
     }

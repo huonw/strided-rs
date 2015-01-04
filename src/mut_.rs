@@ -1,6 +1,8 @@
-use std::fmt::{mod, Show};
+use std::cmp::Ordering;
+use std::fmt::{self, Show};
 use std::kinds::marker;
 use std::mem;
+use std::ops::{IndexMut, Deref};
 use base;
 use base::Stride as Base;
 
@@ -207,7 +209,8 @@ impl<'a, T> IndexMut<uint, T> for Stride<'a, T> {
     }
 }
 
-impl<'a, T> Deref<::imm::Stride<'a, T>> for Stride<'a, T> {
+impl<'a, T> Deref for Stride<'a, T> {
+    type Target = ::imm::Stride<'a, T>;
     fn deref<'b>(&'b self) -> &'b ::imm::Stride<'a, T> {
         unsafe { mem::transmute(self) }
     }
