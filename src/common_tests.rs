@@ -1,5 +1,5 @@
 // this is written to be used by both mut_ and imm.
-#![macro_escape]
+#![macro_use]
 
 macro_rules! eq {
     (noref $stride: expr, $expected: expr) => {
@@ -18,7 +18,7 @@ macro_rules! eq {
         assert_eq!(iter.size_hint(),(e.len(), Some(e.len())));
         let vals = iter.by_ref().map(|s| *s).collect::<Vec<_>>();
         if vals.as_slice() != e {
-            panic!("mismatched: {}, {}", vals, e);
+            panic!("mismatched: {:?}, {:?}", vals, e);
         }
         assert_eq!(iter.size_hint(),(0, Some(0)));
     }}
@@ -39,7 +39,7 @@ macro_rules! substrides {
         let v: &mut [u16] = &mut $input;
         let s = Stride::new(v);
         let expected: &[&[_]] = &[$({ const X: &'static [u16] = &$expected; X }),*];
-        let mut n = 0u;
+        let mut n = 0;
         let mut it = s.substrides($n);
         assert_eq!(it.size_hint(), ($n, Some($n)));
         for (test, real) in it.by_ref().zip(expected.iter()) {
@@ -119,23 +119,23 @@ macro_rules! make_tests {
 
         #[test]
         fn show() {
-            assert_eq!(format!("{}", Stride::new(&mut [1u16, 2, 3, 4, 5]).$substrides2().0),
-                       "[1, 3, 5]".into_string());
-            assert_eq!(format!("{}", Stride::new(&mut [1u16, 2, 3]).$substrides2().0),
-                       "[1, 3]".into_string());
-            assert_eq!(format!("{}", Stride::new(&mut [1u16]).$substrides2().0),
-                       "[1]".into_string());
-            assert_eq!(format!("{}", Stride::<u16>::new(&mut []).$substrides2().0),
-                       "[]".into_string());
+            assert_eq!(format!("{:?}", Stride::new(&mut [1u16, 2, 3, 4, 5]).$substrides2().0),
+                       "[1u16, 3u16, 5u16]");
+            assert_eq!(format!("{:?}", Stride::new(&mut [1u16, 2, 3]).$substrides2().0),
+                       "[1u16, 3u16]");
+            assert_eq!(format!("{:?}", Stride::new(&mut [1u16]).$substrides2().0),
+                       "[1u16]");
+            assert_eq!(format!("{:?}", Stride::<u16>::new(&mut []).$substrides2().0),
+                       "[]");
 
-            assert_eq!(format!("{:#}", Stride::new(&mut [1u16, 2, 3, 4, 5]).$substrides2().0),
-                       "1, 3, 5".into_string());
-            assert_eq!(format!("{:#}", Stride::new(&mut [1u16, 2, 3]).$substrides2().0),
-                       "1, 3".into_string());
-            assert_eq!(format!("{:#}", Stride::new(&mut [1u16]).$substrides2().0),
-                       "1".into_string());
-            assert_eq!(format!("{:#}", Stride::<u16>::new(&mut []).$substrides2().0),
-                       "".into_string())
+            assert_eq!(format!("{:#?}", Stride::new(&mut [1u16, 2, 3, 4, 5]).$substrides2().0),
+                       "1u16, 3u16, 5u16");
+            assert_eq!(format!("{:#?}", Stride::new(&mut [1u16, 2, 3]).$substrides2().0),
+                       "1u16, 3u16");
+            assert_eq!(format!("{:#?}", Stride::new(&mut [1u16]).$substrides2().0),
+                       "1u16");
+            assert_eq!(format!("{:#?}", Stride::<u16>::new(&mut []).$substrides2().0),
+                       "")
         }
 
         #[test]
@@ -201,13 +201,13 @@ macro_rules! make_tests {
         fn iter() {
             let v = &mut [1u16, 2, 3, 4, 5];
             let mut s = Stride::new(v);
-            let mut n = 0u;
+            let mut n = 0;
             for (x, y) in s.$iter().zip([1,2,3,4,5].iter()) {
                 assert_eq!(*x, *y);
                 n += 1;
             }
             assert_eq!(n, 5);
-            let mut n = 0u;
+            let mut n = 0;
             for (x, y) in (s.$substrides2().0).$iter().zip([1,3,5].iter()) {
                 assert_eq!(*x, *y);
                 n += 1;

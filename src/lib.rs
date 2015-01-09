@@ -1,5 +1,3 @@
-#![feature(macro_rules, associated_types)]
-
 //! Strided slices.
 //!
 //! This library provides two types `Stride` and `MutStride` as
@@ -164,6 +162,7 @@
 //! later in the loop.
 //!
 //! ```rust
+//! # #![allow(unstable)]
 //! extern crate strided;
 //! extern crate num; // https://github.com/rust-lang/num
 //! use std::num::Int;
@@ -216,7 +215,7 @@
 //!     let mut b = [Complex::new(0., 0.); 4];
 //!
 //!     fft(Stride::new(&a), MutStride::new(&mut b));
-//!     println!("forward: {} -> {}", a.as_slice(), b.as_slice());
+//!     println!("forward: {:?} -> {:?}", a.as_slice(), b.as_slice());
 //! }
 //! ```
 //!
@@ -225,6 +224,8 @@
 //! [FFTW](http://www.fftw.org/). (Strictly speaking `output` does not
 //! need to be a strided slice, since it is never split into
 //! alternating elements.)
+
+#![allow(unstable)]
 
 #[cfg(test)] extern crate test;
 
@@ -253,7 +254,7 @@ mod bench {
     use test::Bencher as B;
     use test;
 
-    const N: uint = 100;
+    const N: usize = 100;
 
     #[bench]
     fn iter_slice(b: &mut B) {

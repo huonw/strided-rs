@@ -1,17 +1,17 @@
 use std::cmp::Ordering;
 use std::fmt::{self, Show};
 use std::iter::order;
-use std::kinds::marker;
+use std::marker;
 use std::mem;
 use std::num::Int;
 
 #[repr(C)]
 #[derive(Clone)]
-#[allow(raw_pointer_deriving)]
+#[allow(raw_pointer_derive)]
 pub struct Stride<'a,T: 'a> {
     data: *mut T,
-    len: uint,
-    stride: uint,
+    len: usize,
+    stride: usize,
 
     _marker: marker::ContravariantLifetime<'a>,
 }
@@ -39,7 +39,7 @@ impl<'a, T: Ord> Ord for Stride<'a, T> {
 
 impl<'a, T: Show> Show for Stride<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if f.flags() & (1 << (fmt::rt::FlagAlternate as uint)) == 0 {
+        if f.flags() & (1 << (fmt::rt::FlagAlternate as usize)) == 0 {
             try!(write!(f, "["));
         }
         let mut is_first = true;
@@ -49,9 +49,9 @@ impl<'a, T: Show> Show for Stride<'a, T> {
             } else {
                 try!(write!(f, ", "));
             }
-            try!(write!(f, "{}", *x))
+            try!(write!(f, "{:?}", *x))
         }
-        if f.flags() & (1 << (fmt::rt::FlagAlternate as uint)) == 0 {
+        if f.flags() & (1 << (fmt::rt::FlagAlternate as usize)) == 0 {
             try!(write!(f, "]"));
         }
         Ok(())
@@ -59,18 +59,18 @@ impl<'a, T: Show> Show for Stride<'a, T> {
 }
 
 
-unsafe fn step<T>(ptr: *mut T, stride: uint) -> *mut T {
+unsafe fn step<T>(ptr: *mut T, stride: usize) -> *mut T {
     debug_assert!(stride % mem::size_of::<T>() == 0);
-    (ptr as *mut u8).offset(stride as int) as *mut T
+    (ptr as *mut u8).offset(stride as isize) as *mut T
 }
 
 impl<'a, T> Stride<'a, T> {
     #[inline(always)]
-    pub fn new(data: *mut T, len: uint, elem_stride: uint) -> Stride<'a, T> {
+    pub fn new(data: *mut T, len: usize, elem_stride: usize) -> Stride<'a, T> {
         Stride::new_raw(data, len, elem_stride * mem::size_of::<T>())
     }
 
-    fn new_raw(data: *mut T, len: uint, byte_stride: uint) -> Stride<'a, T> {
+    fn new_raw(data: *mut T, len: usize, byte_stride: usize) -> Stride<'a, T> {
         // remove this assertion
         assert!(mem::size_of::<T>() != 0);
         Stride {
@@ -82,11 +82,11 @@ impl<'a, T> Stride<'a, T> {
     }
 
     #[inline(always)]
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.len
     }
     #[inline(always)]
-    pub fn stride(&self) -> uint {
+    pub fn stride(&self) -> usize {
         self.stride
     }
     #[inline(always)]
@@ -111,7 +111,7 @@ impl<'a, T> Stride<'a, T> {
     }
 
     #[inline]
-    pub fn substrides(self, n: uint) -> Substrides<'a, T> {
+    pub fn substrides(self, n: usize) -> Substrides<'a, T> {
         assert!(n != 0);
         let long_len = (self.len() + n - 1) / n;
         let new_stride = n.checked_mul(self.stride).expect("Stride.substrides: stride too large");
@@ -124,7 +124,7 @@ impl<'a, T> Stride<'a, T> {
     }
 
     pub fn iter(&self) -> Items<'a, T> {
-        assert!(self.data as uint + self.len * self.stride >= self.data as uint);
+        assert!(self.data as usize + self.len * self.stride >= self.data as usize);
         Items {
             start: self.data as *const _,
             // this points one-stride past the end, and so is
@@ -137,7 +137,7 @@ impl<'a, T> Stride<'a, T> {
         }
     }
     pub fn iter_mut(&mut self) -> MutItems<'a, T> {
-        assert!(self.data as uint + self.len * self.stride >= self.data as uint);
+        assert!(self.data as usize + self.len * self.stride >= self.data as usize);
         MutItems {
             start: self.data,
             end: unsafe {step(self.data, self.stride * self.len)},
@@ -147,7 +147,7 @@ impl<'a, T> Stride<'a, T> {
     }
 
     #[inline]
-    pub fn get(&self, n: uint) -> Option<&'a T> {
+    pub fn get(&self, n: usize) -> Option<&'a T> {
         if n < self.len {
             unsafe {Some(&*step(self.data, n * self.stride))}
         } else {
@@ -155,7 +155,7 @@ impl<'a, T> Stride<'a, T> {
         }
     }
     #[inline]
-    pub fn get_mut(&mut self, n: uint) -> Option<&'a mut T> {
+    pub fn get_mut(&mut self, n: usize) -> Option<&'a mut T> {
         if n < self.len {
             unsafe {Some(&mut *step(self.data, n * self.stride))}
         } else {
@@ -165,22 +165,22 @@ impl<'a, T> Stride<'a, T> {
 
 
     #[inline]
-    pub fn slice(self, from: uint, to: uint) -> Stride<'a, T> {
+    pub fn slice(self, from: usize, to: usize) -> Stride<'a, T> {
         assert!(from <= to && to <= self.len());
         unsafe {
             Stride::new_raw(step(self.data, from * self.stride), to - from, self.stride)
         }
     }
     #[inline]
-    pub fn slice_from(self, from: uint) -> Stride<'a, T> {
+    pub fn slice_from(self, from: usize) -> Stride<'a, T> {
         self.slice(from, self.len())
     }
     #[inline]
-    pub fn slice_to(self, to: uint) -> Stride<'a, T> {
+    pub fn slice_to(self, to: usize) -> Stride<'a, T> {
         self.slice(0, to)
     }
 
-    pub fn split_at(self, idx: uint) -> (Stride<'a, T>, Stride<'a, T>) {
+    pub fn split_at(self, idx: usize) -> (Stride<'a, T>, Stride<'a, T>) {
         assert!(idx <= self.len());
         unsafe {
             (Stride::new_raw(self.data, idx, self.stride),
@@ -191,7 +191,8 @@ impl<'a, T> Stride<'a, T> {
 
 macro_rules! iterator {
     ($name: ident -> $elem: ty) => {
-        impl<'a, T> Iterator<$elem> for $name<'a, T> {
+        impl<'a, T> Iterator for $name<'a, T> {
+            type Item = $elem;
             #[inline]
             fn next(&mut self) -> Option<$elem> {
                 if self.start < self.end {
@@ -206,13 +207,13 @@ macro_rules! iterator {
             }
 
             #[inline]
-            fn size_hint(&self) -> (uint, Option<uint>) {
-                let n = (self.end as uint - self.start as uint) / self.stride as uint;
+            fn size_hint(&self) -> (usize, Option<usize>) {
+                let n = (self.end as usize - self.start as usize) / self.stride as usize;
                 (n, Some(n))
             }
         }
 
-        impl<'a, T> DoubleEndedIterator<$elem> for $name<'a, T> {
+        impl<'a, T> DoubleEndedIterator for $name<'a, T> {
             #[inline]
             #[allow(unsigned_negation)]
             fn next_back(&mut self) -> Option<$elem> {
@@ -231,12 +232,12 @@ macro_rules! iterator {
 
 /// An iterator over shared references to the elements of a strided
 /// slice.
-#[allow(raw_pointer_deriving)]
+#[allow(raw_pointer_derive)]
 #[derive(Copy)]
 pub struct Items<'a, T: 'a> {
     start: *const T,
     end: *const T,
-    stride: uint,
+    stride: usize,
     _marker: marker::ContravariantLifetime<'a>,
 }
 iterator!(Items -> &'a T);
@@ -246,19 +247,20 @@ iterator!(Items -> &'a T);
 pub struct MutItems<'a, T: 'a> {
     start: *mut T,
     end: *mut T,
-    stride: uint,
+    stride: usize,
     _marker: marker::ContravariantLifetime<'a>,
 }
 iterator!(MutItems -> &'a mut T);
 
 pub struct Substrides<'a, T: 'a> {
     x: Stride<'a, T>,
-    base_stride: uint,
-    nlong: uint,
-    count: uint
+    base_stride: usize,
+    nlong: usize,
+    count: usize
 }
 
-impl<'a, T> Iterator<Stride<'a, T>> for Substrides<'a, T> {
+impl<'a, T> Iterator for Substrides<'a, T> {
+    type Item = Stride<'a, T>;
     fn next(&mut self) -> Option<Stride<'a, T>> {
         if self.count == 0 { return None }
         self.count -= 1;
@@ -277,7 +279,7 @@ impl<'a, T> Iterator<Stride<'a, T>> for Substrides<'a, T> {
         Some(ret)
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         (self.count, Some(self.count))
     }
 }

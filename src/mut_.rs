@@ -1,6 +1,6 @@
 use std::cmp::Ordering;
 use std::fmt::{self, Show};
-use std::kinds::marker;
+use std::marker;
 use std::mem;
 use std::ops::{IndexMut, Deref};
 use base;
@@ -68,13 +68,13 @@ impl<'a, T> Stride<'a, T> {
 
     /// Returns the number of elements accessible in `self`.
     #[inline(always)]
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.base.len()
     }
     /// Returns the offset between successive elements of `self` as a
     /// count of *elements*, not bytes.
     #[inline(always)]
-    pub fn stride(&self) -> uint {
+    pub fn stride(&self) -> usize {
         self.base.stride() / mem::size_of::<T>()
     }
 
@@ -124,7 +124,7 @@ impl<'a, T> Stride<'a, T> {
     /// (return `n` strided slices) even if `self` has fewer than `n`
     /// elements.
     #[inline]
-    pub fn substrides_mut(self, n: uint) -> Substrides<'a, T> {
+    pub fn substrides_mut(self, n: usize) -> Substrides<'a, T> {
         Substrides {
             base: self.base.substrides(n),
             _marker: marker::NoCopy,
@@ -133,7 +133,7 @@ impl<'a, T> Stride<'a, T> {
     /// Returns a reference to the `n`th element of `self`, or `None`
     /// if `n` is out-of-bounds.
     #[inline]
-    pub fn get_mut<'b>(&'b mut self, n: uint) -> Option<&'b mut T> {
+    pub fn get_mut<'b>(&'b mut self, n: usize) -> Option<&'b mut T> {
         self.base.get_mut(n).map(|r| &mut *r)
     }
 
@@ -164,7 +164,7 @@ impl<'a, T> Stride<'a, T> {
     ///
     /// Panics if `from > to` or if `to > self.len()`.
     #[inline]
-    pub fn slice_mut(self, from: uint, to: uint) -> Stride<'a, T> {
+    pub fn slice_mut(self, from: usize, to: usize) -> Stride<'a, T> {
         Stride::new_raw(self.base.slice(from, to))
     }
     /// Returns a strided slice containing only the elements from
@@ -174,7 +174,7 @@ impl<'a, T> Stride<'a, T> {
     ///
     /// Panics if `from > self.len()`.
     #[inline]
-    pub fn slice_from_mut(self, from: uint) -> Stride<'a, T> {
+    pub fn slice_from_mut(self, from: usize) -> Stride<'a, T> {
         Stride::new_raw(self.base.slice_from(from))
     }
     /// Returns a strided slice containing only the elements to
@@ -184,7 +184,7 @@ impl<'a, T> Stride<'a, T> {
     ///
     /// Panics if `to > self.len()`.
     #[inline]
-    pub fn slice_to_mut(self, to: uint) -> Stride<'a, T> {
+    pub fn slice_to_mut(self, to: usize) -> Stride<'a, T> {
         Stride::new_raw(self.base.slice_to(to))
     }
     /// Returns two strided slices, the first with elements up to
@@ -197,14 +197,15 @@ impl<'a, T> Stride<'a, T> {
     ///
     /// Panics if `idx > self.len()`.
     #[inline]
-    pub fn split_at_mut(self, idx: uint) -> (Stride<'a, T>, Stride<'a, T>) {
+    pub fn split_at_mut(self, idx: usize) -> (Stride<'a, T>, Stride<'a, T>) {
         let (l, r) = self.base.split_at(idx);
         (Stride::new_raw(l), Stride::new_raw(r))
     }
 }
 
-impl<'a, T> IndexMut<uint, T> for Stride<'a, T> {
-    fn index_mut<'b>(&'b mut self, n: &uint) -> &'b mut T {
+impl<'a, T> IndexMut<usize> for Stride<'a, T> {
+    type Output = T;
+    fn index_mut<'b>(&'b mut self, n: &usize) -> &'b mut T {
         self.get_mut(*n).expect("Stride.index_mut: index out of bounds")
     }
 }
@@ -224,7 +225,8 @@ pub struct Substrides<'a, T: 'a> {
     _marker: marker::NoCopy
 }
 
-impl<'a, T> Iterator<Stride<'a, T>> for Substrides<'a, T> {
+impl<'a, T> Iterator for Substrides<'a, T> {
+    type Item = Stride<'a, T>;
     fn next(&mut self) -> Option<Stride<'a, T>> {
         match self.base.next() {
             Some(s) => Some(Stride::new_raw(s)),
@@ -232,7 +234,7 @@ impl<'a, T> Iterator<Stride<'a, T>> for Substrides<'a, T> {
         }
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.base.size_hint()
     }
 }

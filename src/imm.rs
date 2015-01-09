@@ -36,13 +36,13 @@ impl<'a, T> Stride<'a, T> {
 
     /// Returns the number of elements accessible in `self`.
     #[inline(always)]
-    pub fn len(&self) -> uint {
+    pub fn len(&self) -> usize {
         self.base.len()
     }
     /// Returns the offset between successive elements of `self` as a
     /// count of *elements*, not bytes.
     #[inline(always)]
-    pub fn stride(&self) -> uint {
+    pub fn stride(&self) -> usize {
         self.base.stride() / mem::size_of::<T>()
     }
     /// Returns a pointer to the first element of this strided slice.
@@ -96,7 +96,7 @@ impl<'a, T> Stride<'a, T> {
     /// (return `n` strided slices) even if `self` has fewer than `n`
     /// elements and if `self.len()` is not a multiple of `n`.
     #[inline]
-    pub fn substrides(&self, n: uint) -> Substrides<'a, T> {
+    pub fn substrides(&self, n: usize) -> Substrides<'a, T> {
         Substrides {
             base: self.base.substrides(n),
         }
@@ -104,7 +104,7 @@ impl<'a, T> Stride<'a, T> {
     /// Returns a reference to the `n`th element of `self`, or `None`
     /// if `n` is out-of-bounds.
     #[inline]
-    pub fn get(&self, n: uint) -> Option<&'a T> {
+    pub fn get(&self, n: usize) -> Option<&'a T> {
         self.base.get(n)
     }
 
@@ -126,7 +126,7 @@ impl<'a, T> Stride<'a, T> {
     ///
     /// Panics if `from > to` or if `to > self.len()`.
     #[inline]
-    pub fn slice(&self, from: uint, to: uint) -> Stride<'a, T> {
+    pub fn slice(&self, from: usize, to: usize) -> Stride<'a, T> {
         Stride::new_raw(self.base.slice(from, to))
     }
     /// Returns a strided slice containing only the elements from
@@ -136,7 +136,7 @@ impl<'a, T> Stride<'a, T> {
     ///
     /// Panics if `from > self.len()`.
     #[inline]
-    pub fn slice_from(&self, from: uint) -> Stride<'a, T> {
+    pub fn slice_from(&self, from: usize) -> Stride<'a, T> {
         Stride::new_raw(self.base.slice_from(from))
     }
     /// Returns a strided slice containing only the elements to
@@ -146,7 +146,7 @@ impl<'a, T> Stride<'a, T> {
     ///
     /// Panics if `to > self.len()`.
     #[inline]
-    pub fn slice_to(&self, to: uint) -> Stride<'a, T> {
+    pub fn slice_to(&self, to: usize) -> Stride<'a, T> {
         Stride::new_raw(self.base.slice_to(to))
     }
     /// Returns two strided slices, the first with elements up to
@@ -159,14 +159,15 @@ impl<'a, T> Stride<'a, T> {
     ///
     /// Panics if `idx > self.len()`.
     #[inline]
-    pub fn split_at(&self, idx: uint) -> (Stride<'a, T>, Stride<'a, T>) {
+    pub fn split_at(&self, idx: usize) -> (Stride<'a, T>, Stride<'a, T>) {
         let (l, r) = self.base.split_at(idx);
         (Stride::new_raw(l), Stride::new_raw(r))
     }
 }
 
-impl<'a, T> Index<uint, T> for Stride<'a, T> {
-    fn index<'b>(&'b self, n: &uint) -> &'b T {
+impl<'a, T> Index<usize> for Stride<'a, T> {
+    type Output = T;
+    fn index<'b>(&'b self, n: &usize) -> &'b T {
         self.get(*n).expect("Stride.index: index out of bounds")
     }
 }
@@ -178,7 +179,8 @@ pub struct Substrides<'a, T: 'a> {
     base: base::Substrides<'a, T>,
 }
 
-impl<'a, T> Iterator<Stride<'a, T>> for Substrides<'a, T> {
+impl<'a, T> Iterator for Substrides<'a, T> {
+    type Item = Stride<'a, T>;
     fn next(&mut self) -> Option<Stride<'a, T>> {
         match self.base.next() {
             Some(s) => Some(Stride::new_raw(s)),
@@ -186,7 +188,7 @@ impl<'a, T> Iterator<Stride<'a, T>> for Substrides<'a, T> {
         }
     }
 
-    fn size_hint(&self) -> (uint, Option<uint>) {
+    fn size_hint(&self) -> (usize, Option<usize>) {
         self.base.size_hint()
     }
 }
