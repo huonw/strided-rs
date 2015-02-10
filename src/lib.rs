@@ -225,7 +225,8 @@
 //! need to be a strided slice, since it is never split into
 //! alternating elements.)
 
-#![allow(unstable)]
+#![feature(core)]
+#![cfg_attr(test, feature(test))]
 
 #[cfg(test)] extern crate test;
 
@@ -261,7 +262,7 @@ mod bench {
         let v = range(0, N).collect::<Vec<_>>();
         b.iter(|| {
             test::black_box(&v);
-            for e in v.iter() { test::black_box(e) }
+            for e in v.iter() { test::black_box(e); }
         })
     }
 
@@ -271,7 +272,7 @@ mod bench {
         let s = Stride::new(&*v);
         b.iter(|| {
             test::black_box(&s);
-            for e in s.iter() { test::black_box(e) }
+            for e in s.iter() { test::black_box(e); }
         })
     }
 
@@ -282,7 +283,7 @@ mod bench {
         let s = s.substrides(13).next().unwrap();
         b.iter(|| {
             test::black_box(&s);
-            for e in s.iter() { test::black_box(e) }
+            for e in s.iter() { test::black_box(e); }
         })
     }
 }

@@ -120,22 +120,13 @@ macro_rules! make_tests {
         #[test]
         fn show() {
             assert_eq!(format!("{:?}", Stride::new(&mut [1u16, 2, 3, 4, 5]).$substrides2().0),
-                       "[1u16, 3u16, 5u16]");
+                       "[1, 3, 5]");
             assert_eq!(format!("{:?}", Stride::new(&mut [1u16, 2, 3]).$substrides2().0),
-                       "[1u16, 3u16]");
+                       "[1, 3]");
             assert_eq!(format!("{:?}", Stride::new(&mut [1u16]).$substrides2().0),
-                       "[1u16]");
+                       "[1]");
             assert_eq!(format!("{:?}", Stride::<u16>::new(&mut []).$substrides2().0),
                        "[]");
-
-            assert_eq!(format!("{:#?}", Stride::new(&mut [1u16, 2, 3, 4, 5]).$substrides2().0),
-                       "1u16, 3u16, 5u16");
-            assert_eq!(format!("{:#?}", Stride::new(&mut [1u16, 2, 3]).$substrides2().0),
-                       "1u16, 3u16");
-            assert_eq!(format!("{:#?}", Stride::new(&mut [1u16]).$substrides2().0),
-                       "1u16");
-            assert_eq!(format!("{:#?}", Stride::<u16>::new(&mut []).$substrides2().0),
-                       "")
         }
 
         #[test]

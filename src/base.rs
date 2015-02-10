@@ -1,5 +1,5 @@
 use std::cmp::Ordering;
-use std::fmt::{self, Show};
+use std::fmt::{self, Debug};
 use std::iter::order;
 use std::marker;
 use std::mem;
@@ -37,11 +37,9 @@ impl<'a, T: Ord> Ord for Stride<'a, T> {
     }
 }
 
-impl<'a, T: Show> Show for Stride<'a, T> {
+impl<'a, T: Debug> Debug for Stride<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if f.flags() & (1 << (fmt::rt::FlagAlternate as usize)) == 0 {
-            try!(write!(f, "["));
-        }
+        try!(write!(f, "["));
         let mut is_first = true;
         for x in self.iter() {
             if is_first {
@@ -51,10 +49,7 @@ impl<'a, T: Show> Show for Stride<'a, T> {
             }
             try!(write!(f, "{:?}", *x))
         }
-        if f.flags() & (1 << (fmt::rt::FlagAlternate as usize)) == 0 {
-            try!(write!(f, "]"));
-        }
-        Ok(())
+        write!(f, "]")
     }
 }
 

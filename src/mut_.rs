@@ -1,8 +1,8 @@
 use std::cmp::Ordering;
-use std::fmt::{self, Show};
+use std::fmt::{self, Debug};
 use std::marker;
 use std::mem;
-use std::ops::{IndexMut, Deref};
+use std::ops::{Index, IndexMut, Deref};
 use base;
 use base::Stride as Base;
 
@@ -44,7 +44,7 @@ impl<'a, T: Ord> Ord for Stride<'a, T> {
     }
 }
 
-impl<'a, T: Show> Show for Stride<'a, T> {
+impl<'a, T: Debug> Debug for Stride<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.base.fmt(f)
     }
@@ -203,8 +203,13 @@ impl<'a, T> Stride<'a, T> {
     }
 }
 
-impl<'a, T> IndexMut<usize> for Stride<'a, T> {
+impl<'a, T> Index<usize> for Stride<'a, T> {
     type Output = T;
+    fn index<'b>(&'b self, n: &usize) -> &'b T {
+&        (**self)[*n]
+    }
+}
+impl<'a, T> IndexMut<usize> for Stride<'a, T> {
     fn index_mut<'b>(&'b mut self, n: &usize) -> &'b mut T {
         self.get_mut(*n).expect("Stride.index_mut: index out of bounds")
     }

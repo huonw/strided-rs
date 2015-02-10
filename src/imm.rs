@@ -1,4 +1,4 @@
-use std::fmt::{self, Show};
+use std::fmt::{self, Debug};
 use std::mem;
 use std::ops::Index;
 use base;
@@ -13,7 +13,7 @@ pub struct Stride<'a,T: 'a> {
 }
 impl<'a, T> Copy for Stride<'a, T> {}
 
-impl<'a, T: Show> Show for Stride<'a, T> {
+impl<'a, T: Debug> Debug for Stride<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.base.fmt(f)
     }
