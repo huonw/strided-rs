@@ -13,6 +13,9 @@ pub struct Stride<'a,T: 'a> {
 }
 impl<'a, T> Copy for Stride<'a, T> {}
 
+unsafe impl<'a, T: Sync> Sync for Stride<'a, T> {}
+unsafe impl<'a, T: Sync> Send for Stride<'a, T> {}
+
 impl<'a, T: Debug> Debug for Stride<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         self.base.fmt(f)

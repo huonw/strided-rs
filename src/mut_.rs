@@ -27,6 +27,9 @@ pub struct Stride<'a,T: 'a> {
     _marker: marker::NoCopy,
 }
 
+unsafe impl<'a, T: Sync> Sync for Stride<'a, T> {}
+unsafe impl<'a, T: Send> Send for Stride<'a, T> {}
+
 impl<'a, T: PartialEq> PartialEq for Stride<'a, T> {
     fn eq(&self, other: &Stride<'a, T>) -> bool { self.base == other.base }
 }
