@@ -9,11 +9,11 @@ use std::num::Int;
 #[derive(Clone)]
 #[allow(raw_pointer_derive)]
 pub struct Stride<'a,T: 'a> {
-    data: *mut T,
+    data: *const T,
     len: usize,
     stride: usize,
 
-    _marker: marker::ContravariantLifetime<'a>,
+    _marker: marker::PhantomData<&'a T>,
 }
 
 impl<'a, T> Copy for Stride<'a, T> {}
@@ -54,9 +54,9 @@ impl<'a, T: Debug> Debug for Stride<'a, T> {
 }
 
 
-unsafe fn step<T>(ptr: *mut T, stride: usize) -> *mut T {
+unsafe fn step<T>(ptr: *const T, stride: usize) -> *const T {
     debug_assert!(stride % mem::size_of::<T>() == 0);
-    (ptr as *mut u8).offset(stride as isize) as *mut T
+    (ptr as *const u8).offset(stride as isize) as *const T
 }
 
 impl<'a, T> Stride<'a, T> {
@@ -72,7 +72,7 @@ impl<'a, T> Stride<'a, T> {
             data: data,
             len: len,
             stride: byte_stride,
-            _marker: marker::ContravariantLifetime
+            _marker: marker::PhantomData,
         }
     }
 
@@ -86,7 +86,7 @@ impl<'a, T> Stride<'a, T> {
     }
     #[inline(always)]
     pub fn as_mut_ptr(&self) -> *mut T {
-        self.data
+        self.data as *mut T
     }
 
 
@@ -95,14 +95,15 @@ impl<'a, T> Stride<'a, T> {
         let right_len = self.len() - left_len;
         let stride = self.stride.checked_mul(2).expect("Stride.substrides2: stride too large");
 
+        let left_ptr = self.data;
         let right_ptr = if self.len() == 0 {
-            self.data
+            left_ptr
         } else {
-            unsafe {step(self.data, self.stride)}
+            unsafe {step(left_ptr, self.stride)}
         };
 
-        (Stride::new_raw(self.data, left_len, stride),
-         Stride::new_raw(right_ptr, right_len, stride))
+        (Stride::new_raw(left_ptr as *mut _, left_len, stride),
+         Stride::new_raw(right_ptr as *mut _, right_len, stride))
     }
 
     #[inline]
@@ -111,7 +112,7 @@ impl<'a, T> Stride<'a, T> {
         let long_len = (self.len() + n - 1) / n;
         let new_stride = n.checked_mul(self.stride).expect("Stride.substrides: stride too large");
         Substrides {
-            x: Stride::new_raw(self.data, long_len, new_stride),
+            x: Stride::new_raw(self.data as *mut _, long_len, new_stride),
             base_stride: self.stride,
             nlong: self.len() % n,
             count: n
@@ -126,18 +127,18 @@ impl<'a, T> Stride<'a, T> {
             // possibly undefined behaviour since the underlying array
             // doesn't necessarily extend this far (e.g. a Stride of
             // [1, 2, 3] starting at 2 with stride 2)
-            end: unsafe {step(self.data, self.stride * self.len) as *const _},
+            end: unsafe {step(self.data, self.stride * self.len)},
             stride: self.stride,
-            _marker: marker::ContravariantLifetime,
+            _marker: marker::PhantomData,
         }
     }
     pub fn iter_mut(&mut self) -> MutItems<'a, T> {
         assert!(self.data as usize + self.len * self.stride >= self.data as usize);
         MutItems {
-            start: self.data,
-            end: unsafe {step(self.data, self.stride * self.len)},
+            start: self.data as *mut _,
+            end: unsafe {step(self.data, self.stride * self.len) as *mut _},
             stride: self.stride,
-            _marker: marker::ContravariantLifetime,
+            _marker: marker::PhantomData,
         }
     }
 
@@ -152,7 +153,7 @@ impl<'a, T> Stride<'a, T> {
     #[inline]
     pub fn get_mut(&mut self, n: usize) -> Option<&'a mut T> {
         if n < self.len {
-            unsafe {Some(&mut *step(self.data, n * self.stride))}
+            unsafe {Some(&mut *(step(self.data, n * self.stride) as *mut _))}
         } else {
             None
         }
@@ -163,7 +164,8 @@ impl<'a, T> Stride<'a, T> {
     pub fn slice(self, from: usize, to: usize) -> Stride<'a, T> {
         assert!(from <= to && to <= self.len());
         unsafe {
-            Stride::new_raw(step(self.data, from * self.stride), to - from, self.stride)
+            Stride::new_raw(step(self.data, from * self.stride) as *mut _,
+                            to - from, self.stride)
         }
     }
     #[inline]
@@ -178,8 +180,9 @@ impl<'a, T> Stride<'a, T> {
     pub fn split_at(self, idx: usize) -> (Stride<'a, T>, Stride<'a, T>) {
         assert!(idx <= self.len());
         unsafe {
-            (Stride::new_raw(self.data, idx, self.stride),
-             Stride::new_raw(step(self.data, idx * self.stride), self.len() - idx, self.stride))
+            (Stride::new_raw(self.data as *mut _, idx, self.stride),
+             Stride::new_raw(step(self.data, idx * self.stride) as *mut _,
+                             self.len() - idx, self.stride))
         }
     }
 }
@@ -233,7 +236,7 @@ pub struct Items<'a, T: 'a> {
     start: *const T,
     end: *const T,
     stride: usize,
-    _marker: marker::ContravariantLifetime<'a>,
+    _marker: marker::PhantomData<&'a T>,
 }
 iterator!(Items -> &'a T);
 
@@ -243,7 +246,7 @@ pub struct MutItems<'a, T: 'a> {
     start: *mut T,
     end: *mut T,
     stride: usize,
-    _marker: marker::ContravariantLifetime<'a>,
+    _marker: marker::PhantomData<&'a mut T>,
 }
 iterator!(MutItems -> &'a mut T);
 

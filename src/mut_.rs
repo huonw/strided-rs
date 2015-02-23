@@ -1,4 +1,3 @@
-use std::cmp::Ordering;
 use std::fmt::{self, Debug};
 use std::marker;
 use std::mem;
@@ -21,31 +20,14 @@ use base::Stride as Base;
 /// directly into the functions that consume `self` without losing
 /// control of the original slice.
 #[repr(C)]
-// #[deriving(PartialEq, Eq, PartialOrd, Ord)] // FIXME: marker types
+#[derive(PartialEq, Eq, PartialOrd, Ord)] // FIXME: marker types
 pub struct Stride<'a,T: 'a> {
     base: Base<'a, T>,
-    _marker: marker::NoCopy,
+    _marker: marker::PhantomData<&'a mut T>,
 }
 
 unsafe impl<'a, T: Sync> Sync for Stride<'a, T> {}
 unsafe impl<'a, T: Send> Send for Stride<'a, T> {}
-
-impl<'a, T: PartialEq> PartialEq for Stride<'a, T> {
-    fn eq(&self, other: &Stride<'a, T>) -> bool { self.base == other.base }
-}
-impl<'a, T: Eq> Eq for Stride<'a, T> {}
-
-impl<'a, T: PartialOrd> PartialOrd for Stride<'a, T> {
-    fn partial_cmp(&self, other: &Stride<'a, T>) -> Option<Ordering> {
-        self.base.partial_cmp(&other.base)
-    }
-}
-
-impl<'a, T: Ord> Ord for Stride<'a, T> {
-    fn cmp(&self, other: &Stride<'a, T>) -> Ordering {
-        self.base.cmp(&other.base)
-    }
-}
 
 impl<'a, T: Debug> Debug for Stride<'a, T> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
@@ -58,7 +40,7 @@ impl<'a, T> Stride<'a, T> {
     fn new_raw(base: Base<'a, T>) -> Stride<'a, T> {
         Stride {
             base: base,
-            _marker: marker::NoCopy
+            _marker: marker::PhantomData
         }
     }
 
