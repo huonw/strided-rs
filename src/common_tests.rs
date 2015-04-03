@@ -17,7 +17,7 @@ macro_rules! eq {
         let mut iter = _stride.$method();
         assert_eq!(iter.size_hint(),(e.len(), Some(e.len())));
         let vals = iter.by_ref().map(|s| *s).collect::<Vec<_>>();
-        if vals.as_slice() != e {
+        if vals != e {
             panic!("mismatched: {:?}, {:?}", vals, e);
         }
         assert_eq!(iter.size_hint(),(0, Some(0)));
@@ -54,7 +54,7 @@ macro_rules! substrides {
 macro_rules! get {
     ($get: ident, $input: expr, $expected: expr, $($mut_: tt)*) => {{
         let mut e = $expected;
-        for i in range(0, e.len() + 10) {
+        for i in 0..e.len() + 10 {
             let expected = e.$get(i);
             assert_eq!($input.$get(i).map(|x| *x), expected.as_ref().map(|x| **x));
 
@@ -73,7 +73,7 @@ macro_rules! make_tests {
      $split_at: ident, $get: ident, $iter: ident,
      $($mut_:tt)*) => {
         #[test]
-        #[should_fail]
+        #[should_panic]
         fn no_zero_sized_types() {
             // FIX ME: remove this test
             let v = &mut [()];

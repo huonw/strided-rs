@@ -190,13 +190,13 @@ impl<'a, T> Stride<'a, T> {
 
 impl<'a, T> Index<usize> for Stride<'a, T> {
     type Output = T;
-    fn index<'b>(&'b self, n: &usize) -> &'b T {
-&        (**self)[*n]
+    fn index<'b>(&'b self, n: usize) -> &'b T {
+&        (**self)[n]
     }
 }
 impl<'a, T> IndexMut<usize> for Stride<'a, T> {
-    fn index_mut<'b>(&'b mut self, n: &usize) -> &'b mut T {
-        self.get_mut(*n).expect("Stride.index_mut: index out of bounds")
+    fn index_mut<'b>(&'b mut self, n: usize) -> &'b mut T {
+        self.get_mut(n).expect("Stride.index_mut: index out of bounds")
     }
 }
 

@@ -7,11 +7,14 @@ use base::Stride as Base;
 /// A shared strided slice. This is equivalent to a `&[T]` that only
 /// refers to every `n`th `T`.
 #[repr(C)]
-#[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(PartialEq, Eq, PartialOrd, Ord)]
 pub struct Stride<'a,T: 'a> {
     base: Base<'a, T>,
 }
 impl<'a, T> Copy for Stride<'a, T> {}
+impl<'a, T> Clone for Stride<'a, T> {
+    fn clone(&self) -> Stride<'a, T> { *self }
+}
 
 unsafe impl<'a, T: Sync> Sync for Stride<'a, T> {}
 unsafe impl<'a, T: Sync> Send for Stride<'a, T> {}
@@ -170,8 +173,8 @@ impl<'a, T> Stride<'a, T> {
 
 impl<'a, T> Index<usize> for Stride<'a, T> {
     type Output = T;
-    fn index<'b>(&'b self, n: &usize) -> &'b T {
-        self.get(*n).expect("Stride.index: index out of bounds")
+    fn index<'b>(&'b self, n: usize) -> &'b T {
+        self.get(n).expect("Stride.index: index out of bounds")
     }
 }
 

@@ -3,11 +3,8 @@ use std::fmt::{self, Debug};
 use std::iter::order;
 use std::marker;
 use std::mem;
-use std::num::Int;
 
 #[repr(C)]
-#[derive(Clone)]
-#[allow(raw_pointer_derive)]
 pub struct Stride<'a,T: 'a> {
     data: *const T,
     len: usize,
@@ -17,6 +14,9 @@ pub struct Stride<'a,T: 'a> {
 }
 
 impl<'a, T> Copy for Stride<'a, T> {}
+impl<'a, T> Clone for Stride<'a, T> {
+    fn clone(&self) -> Stride<'a, T> { *self }
+}
 
 impl<'a, T: PartialEq> PartialEq for Stride<'a, T> {
     fn eq(&self, other: &Stride<'a, T>) -> bool {
@@ -217,7 +217,8 @@ macro_rules! iterator {
             fn next_back(&mut self) -> Option<$elem> {
                 if self.start < self.end {
                     unsafe {
-                        self.end = mem::transmute(step(self.end as *mut T, -self.stride));
+                        self.end = mem::transmute(step(self.end as *mut T,
+                                                       0usize.wrapping_sub(self.stride)));
                         Some(mem::transmute::<_, $elem>(self.end))
                     }
                 } else {
@@ -231,7 +232,6 @@ macro_rules! iterator {
 /// An iterator over shared references to the elements of a strided
 /// slice.
 #[allow(raw_pointer_derive)]
-#[derive(Copy)]
 pub struct Items<'a, T: 'a> {
     start: *const T,
     end: *const T,
@@ -239,6 +239,11 @@ pub struct Items<'a, T: 'a> {
     _marker: marker::PhantomData<&'a T>,
 }
 iterator!(Items -> &'a T);
+
+impl<'a, T> Copy for Items<'a, T> {}
+impl<'a, T> Clone for Items<'a, T> {
+    fn clone(&self) -> Items<'a, T> { *self }
+}
 
 /// An iterator over mutable references to the elements of a strided
 /// slice.

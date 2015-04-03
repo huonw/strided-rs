@@ -73,7 +73,7 @@
 //!
 //! left[2] += 10;
 //! match left.get_mut(0) {
-//!     Some(val) => *val -= 3,
+//!     Some(val) => *val -= 1,
 //!     None => {}
 //! }
 //!
@@ -259,7 +259,7 @@ mod bench {
 
     #[bench]
     fn iter_slice(b: &mut B) {
-        let v = range(0, N).collect::<Vec<_>>();
+        let v = (0..N).collect::<Vec<_>>();
         b.iter(|| {
             test::black_box(&v);
             for e in v.iter() { test::black_box(e); }
@@ -268,7 +268,7 @@ mod bench {
 
     #[bench]
     fn iter_step_1(b: &mut B) {
-        let v = range(0, N).collect::<Vec<_>>();
+        let v = (0..N).collect::<Vec<_>>();
         let s = Stride::new(&*v);
         b.iter(|| {
             test::black_box(&s);
@@ -278,7 +278,7 @@ mod bench {
 
     #[bench]
     fn iter_step_13(b: &mut B) {
-        let v = range(0, 13 * N).collect::<Vec<_>>();
+        let v = (0..13 * N).collect::<Vec<_>>();
         let s = Stride::new(&*v);
         let s = s.substrides(13).next().unwrap();
         b.iter(|| {
