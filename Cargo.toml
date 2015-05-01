@@ -21,3 +21,6 @@ immediately adjacently.
 
 [dev-dependencies]
 num = "0"
+
+[features]
+unstable = []

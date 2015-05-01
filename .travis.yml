@@ -1,0 +1,20 @@
+sudo: required
+language: rust
+rust:
+  - nightly
+before_script:
+  - pip install 'travis-cargo<0.2' --user && export PATH=$HOME/.local/bin:$PATH
+script:
+  - |
+      travis-cargo build &&
+      travis-cargo test &&
+      travis-cargo bench &&
+      travis-cargo doc
+after_success:
+  - travis-cargo doc-upload
+  - travis-cargo coveralls
+notifications:
+    webhooks: http://huon.me:54856/travis
+env:
+  global:
+    - secure: "jwYDdl4aAP8Kd7w/KmU+kjvA2eSAOvW00meSV74WamxhY+rTsJiOQwG79D3rlsq/T2BQf6TzpBU9AoYLKEmKsmRoezAu0Kv0ouYkGrdUYkt5Gy3iel/HddQLJf+cBlPuOCfut5+mqcMrPU5Xu53T91d1zs872WG0BrTB7hXHtWU="

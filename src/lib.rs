@@ -165,7 +165,6 @@
 //! # #![allow(unstable)]
 //! extern crate strided;
 //! extern crate num; // https://github.com/rust-lang/num
-//! use std::num::Int;
 //! use std::f64;
 //! use num::complex::{Complex, Complex64};
 //! use strided::{MutStride, Stride};
@@ -215,7 +214,7 @@
 //!     let mut b = [Complex::new(0., 0.); 4];
 //!
 //!     fft(Stride::new(&a), MutStride::new(&mut b));
-//!     println!("forward: {:?} -> {:?}", a.as_slice(), b.as_slice());
+//!     println!("forward: {:?} -> {:?}", &a, &b);
 //! }
 //! ```
 //!
