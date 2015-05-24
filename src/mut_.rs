@@ -112,7 +112,6 @@ impl<'a, T> Stride<'a, T> {
     pub fn substrides_mut(self, n: usize) -> Substrides<'a, T> {
         Substrides {
             base: self.base.substrides(n),
-            _marker: marker::NoCopy,
         }
     }
     /// Returns a reference to the `n`th element of `self`, or `None`
@@ -212,7 +211,6 @@ impl<'a, T> Deref for Stride<'a, T> {
 /// offsets.
 pub struct Substrides<'a, T: 'a> {
     base: base::Substrides<'a, T>,
-    _marker: marker::NoCopy
 }
 
 impl<'a, T> Iterator for Substrides<'a, T> {

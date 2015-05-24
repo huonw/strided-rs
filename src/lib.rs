@@ -224,10 +224,10 @@
 //! need to be a strided slice, since it is never split into
 //! alternating elements.)
 
-#![feature(core)]
-#![cfg_attr(test, feature(test))]
+//#![feature(core)]
+#![cfg_attr(all(test, feature = "unstable"), feature(test))]
 
-#[cfg(test)] extern crate test;
+#[cfg(all(test, feature = "unstable"))] extern crate test;
 
 pub use base::{Items, MutItems};
 
@@ -248,7 +248,7 @@ mod mut_;
 mod imm;
 mod traits;
 
-#[cfg(test)]
+#[cfg(all(test, feature = "unstable"))]
 mod bench {
     use super::Stride;
     use test::Bencher as B;

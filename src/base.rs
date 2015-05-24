@@ -1,6 +1,5 @@
 use std::cmp::Ordering;
 use std::fmt::{self, Debug};
-use std::iter::order;
 use std::marker;
 use std::mem;
 
@@ -20,20 +19,45 @@ impl<'a, T> Clone for Stride<'a, T> {
 
 impl<'a, T: PartialEq> PartialEq for Stride<'a, T> {
     fn eq(&self, other: &Stride<'a, T>) -> bool {
-        self.len() == other.len() &&
-            order::eq(self.iter(), other.iter())
+        if self.len() != other.len() { return false }
+
+        self.iter().zip(other.iter()).all(|(a, b)| a == b)
     }
 }
 impl<'a, T: Eq> Eq for Stride<'a, T> {}
 
 impl<'a, T: PartialOrd> PartialOrd for Stride<'a, T> {
     fn partial_cmp(&self, other: &Stride<'a, T>) -> Option<Ordering> {
-        order::partial_cmp(self.iter(), other.iter())
+        let mut a = self.iter();
+        let mut b = other.iter();
+        loop {
+            match (a.next(), b.next()) {
+                (None, None) => return Some(Ordering::Equal),
+                (None, _   ) => return Some(Ordering::Less),
+                (_   , None) => return Some(Ordering::Greater),
+                (Some(x), Some(y)) => match x.partial_cmp(&y) {
+                    Some(Ordering::Equal) => (),
+                    non_eq => return non_eq,
+                },
+            }
+        }
     }
 }
 impl<'a, T: Ord> Ord for Stride<'a, T> {
     fn cmp(&self, other: &Stride<'a, T>) -> Ordering {
-        order::cmp(self.iter(), other.iter())
+        let mut a = self.iter();
+        let mut b = other.iter();
+        loop {
+            match (a.next(), b.next()) {
+                (None, None) => return Ordering::Equal,
+                (None, _   ) => return Ordering::Less,
+                (_   , None) => return Ordering::Greater,
+                (Some(x), Some(y)) => match x.cmp(&y) {
+                    Ordering::Equal => (),
+                    non_eq => return non_eq,
+                },
+            }
+        }
     }
 }
 
