@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["Stride","A mutable strided slice. This is equivalent to `&mut [T]`, that only refers to every `n`th `T`."],["Substrides","An iterator over `n` mutable substrides of a given stride, each of which points to every `n`th element starting at successive offsets."]]});

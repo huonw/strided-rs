@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["MutStrided","Things that can be viewed as a series of mutable equally spaced `T`s in memory."],["Strided","Things that can be viewed as a series of equally spaced `T`s in memory."]]});
