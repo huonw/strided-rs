@@ -59,3 +59,10 @@ impl<'a,T> Strided for MutStride<'a,T> {
 impl<'a,T> MutStrided for MutStride<'a,T> {
     fn as_stride_mut(&mut self) -> MutStride<T> { self.reborrow() }
 }
+
+impl<'a,T, X: AsRef<[T]> + ?Sized> From<&'a X> for Stride<'a,T> {
+    fn from(value: &X) -> Stride<T> { Stride::new(value.as_ref()) }
+}
+impl<'a,T, X: AsMut<[T]> + ?Sized> From<&'a mut X> for MutStride<'a,T> {
+    fn from(value: &mut X) -> MutStride<T> { MutStride::new(value.as_mut()) }
+}
