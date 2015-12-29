@@ -237,7 +237,7 @@ macro_rules! iterator {
 
         impl<'a, T> DoubleEndedIterator for $name<'a, T> {
             #[inline]
-            #[allow(unsigned_negation)]
+            #[allow(negate_unsigned)]
             fn next_back(&mut self) -> Option<$elem> {
                 if self.start < self.end {
                     unsafe {
